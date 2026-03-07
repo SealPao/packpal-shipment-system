@@ -4,7 +4,7 @@ from ui.operation_window_base import OperationWindowBase
 
 
 class ReturnReceivingWindow(OperationWindowBase):
-    def __init__(self, parent_mode_select=None) -> None:
+    def __init__(self, parent_mode_select=None, selected_camera_name: str | None = None) -> None:
         super().__init__(
             page_title="退貨收貨",
             page_subtitle="此頁面為退貨收貨流程骨架，欄位名稱已先對齊未來 record contract。",
@@ -21,6 +21,7 @@ class ReturnReceivingWindow(OperationWindowBase):
                 "attachments 對應照片與佐證文件",
                 "status 對應檢查中、待確認或已完成狀態",
             ],
+            selected_camera_name=selected_camera_name,
             parent_mode_select=parent_mode_select,
             primary_color="#7c3aed",
             hover_color="#6d28d9",

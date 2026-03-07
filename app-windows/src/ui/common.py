@@ -159,6 +159,10 @@ def app_stylesheet(primary_color: str = "#2563eb", hover_color: str = "#1d4ed8")
             font-size: 13px;
             color: #374151;
         }}
+        #cameraStatus {{
+            font-size: 13px;
+            color: #334155;
+        }}
         #card {{
             background-color: white;
             border: 1px solid #dbe2ea;
@@ -172,7 +176,7 @@ def app_stylesheet(primary_color: str = "#2563eb", hover_color: str = "#1d4ed8")
         QLabel {{
             color: #111827;
         }}
-        QLineEdit {{
+        QLineEdit, QComboBox {{
             min-height: 38px;
             padding: 6px 10px;
             border: 1px solid #cbd5e1;

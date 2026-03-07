@@ -26,6 +26,7 @@ class OperationWindowBase(QMainWindow):
         section_body: str,
         checklist_items: Iterable[str],
         form_sections: Sequence[tuple[str, list[str]]],
+        selected_camera_name: str | None = None,
         parent_mode_select: QMainWindow | None = None,
         primary_color: str = "#2563eb",
         hover_color: str = "#1d4ed8",
@@ -45,6 +46,7 @@ class OperationWindowBase(QMainWindow):
         card, card_layout = create_card()
         card_layout.addWidget(self._build_section_title(section_title))
         card_layout.addWidget(self._build_section_body(section_body))
+        card_layout.addWidget(self._build_camera_status(selected_camera_name))
 
         for section_title_text, field_labels in form_sections:
             card_layout.addWidget(create_form_section(section_title_text, field_labels))
@@ -77,6 +79,11 @@ class OperationWindowBase(QMainWindow):
         label = QLabel(text)
         label.setObjectName("sectionBody")
         label.setWordWrap(True)
+        return label
+
+    def _build_camera_status(self, camera_name: str | None) -> QLabel:
+        label = QLabel(f"目前選擇的相機：{camera_name or '未選擇'}")
+        label.setObjectName("cameraStatus")
         return label
 
     def _build_bullet(self, text: str) -> QWidget:
