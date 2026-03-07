@@ -1,1 +1,1 @@
-﻿"""Local database package for future SQLite integration."""
+"""Local database helpers for the Windows app."""

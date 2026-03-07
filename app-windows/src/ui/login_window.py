@@ -1,14 +1,7 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import (
-    QFormLayout,
-    QHBoxLayout,
-    QLineEdit,
-    QMainWindow,
-    QMessageBox,
-    QPushButton,
-)
+from PySide6.QtWidgets import QFormLayout, QHBoxLayout, QLineEdit, QMainWindow, QMessageBox, QPushButton
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from ui.common import ScreenContainer, app_stylesheet, build_footer, create_card, create_page_header

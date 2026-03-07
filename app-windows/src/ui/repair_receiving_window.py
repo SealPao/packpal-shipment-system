@@ -1,11 +1,18 @@
 from __future__ import annotations
 
+from services.draft_service import DraftService
 from ui.operation_window_base import OperationWindowBase
 
 
 class RepairReceivingWindow(OperationWindowBase):
-    def __init__(self, parent_mode_select=None, selected_camera_name: str | None = None) -> None:
+    def __init__(
+        self,
+        parent_mode_select=None,
+        selected_camera_name: str | None = None,
+        draft_service: DraftService | None = None,
+    ) -> None:
         super().__init__(
+            module_key="repairs",
             page_title="維修收貨",
             page_subtitle="此頁面為維修收貨流程骨架，欄位名稱已先對齊未來 record contract。",
             section_title="預計整合的維修收貨步驟",
@@ -22,6 +29,7 @@ class RepairReceivingWindow(OperationWindowBase):
                 "status 對應收件、待補件或待確認狀態",
             ],
             selected_camera_name=selected_camera_name,
+            draft_service=draft_service,
             parent_mode_select=parent_mode_select,
             primary_color="#b45309",
             hover_color="#92400e",

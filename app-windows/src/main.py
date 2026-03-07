@@ -6,6 +6,7 @@ from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QApplication
 
 from app.config import APP_NAME, APP_ORG_DOMAIN, APP_ORG_NAME
+from db.session import initialize_database
 from ui.login_window import LoginWindow
 
 
@@ -15,6 +16,8 @@ def main() -> int:
     app.setOrganizationName(APP_ORG_NAME)
     app.setOrganizationDomain(APP_ORG_DOMAIN)
     QSettings.setDefaultFormat(QSettings.Format.IniFormat)
+
+    initialize_database()
 
     window = LoginWindow()
     window.show()

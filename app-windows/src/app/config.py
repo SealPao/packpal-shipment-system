@@ -4,3 +4,4 @@ APP_ORG_NAME = "PackPal"
 APP_ORG_DOMAIN = "packpal.local"
 WINDOW_MIN_WIDTH = 960
 WINDOW_MIN_HEIGHT = 640
+DEFAULT_DB_FILENAME = "packpal-local.db"

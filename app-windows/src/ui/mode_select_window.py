@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QComboBox, QHBoxLayout, QLabel, QMainWindow, QPush
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from services.camera_service import CameraOption, CameraService
+from services.draft_service import DraftService
 from ui.common import ScreenContainer, app_stylesheet, build_footer, create_card, create_mode_button, create_page_header
 from ui.repair_receiving_window import RepairReceivingWindow
 from ui.return_receiving_window import ReturnReceivingWindow
@@ -11,11 +12,17 @@ from ui.shipment_window import ShipmentWindow
 
 
 class ModeSelectWindow(QMainWindow):
-    def __init__(self, parent_login: QMainWindow | None = None, camera_service: CameraService | None = None) -> None:
+    def __init__(
+        self,
+        parent_login: QMainWindow | None = None,
+        camera_service: CameraService | None = None,
+        draft_service: DraftService | None = None,
+    ) -> None:
         super().__init__(parent_login)
         self.parent_login = parent_login
         self.child_window: QMainWindow | None = None
         self.camera_service = camera_service or CameraService()
+        self.draft_service = draft_service or DraftService()
         self.cameras: list[CameraOption] = []
 
         self.setWindowTitle(f"{APP_TITLE} - 模式選擇")
@@ -34,9 +41,15 @@ class ModeSelectWindow(QMainWindow):
         back_button.setObjectName("secondaryButton")
         back_button.setMinimumHeight(42)
 
-        shipment_button.clicked.connect(lambda: self.open_child_window(ShipmentWindow(self, self.selected_camera_name())))
-        repair_button.clicked.connect(lambda: self.open_child_window(RepairReceivingWindow(self, self.selected_camera_name())))
-        return_button.clicked.connect(lambda: self.open_child_window(ReturnReceivingWindow(self, self.selected_camera_name())))
+        shipment_button.clicked.connect(
+            lambda: self.open_child_window(ShipmentWindow(self, self.selected_camera_name(), self.draft_service))
+        )
+        repair_button.clicked.connect(
+            lambda: self.open_child_window(RepairReceivingWindow(self, self.selected_camera_name(), self.draft_service))
+        )
+        return_button.clicked.connect(
+            lambda: self.open_child_window(ReturnReceivingWindow(self, self.selected_camera_name(), self.draft_service))
+        )
         back_button.clicked.connect(self.go_back)
 
         card_layout.addWidget(shipment_button)

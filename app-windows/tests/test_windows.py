@@ -1,11 +1,15 @@
 import os
+from pathlib import Path
+import tempfile
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QApplication, QComboBox, QLabel, QLineEdit, QPushButton
 
+from db.session import connect, initialize_database
 from services.camera_service import CameraOption
+from services.draft_service import DraftService
 from ui.login_window import LoginWindow
 from ui.mode_select_window import ModeSelectWindow
 from ui.repair_receiving_window import RepairReceivingWindow
@@ -42,6 +46,10 @@ app = QApplication.instance() or QApplication([])
 QSettings().clear()
 
 
+def unique_db_path(name: str) -> Path:
+    return Path(tempfile.gettempdir()) / f"{name}-{os.getpid()}.db"
+
+
 def test_login_window_renders_expected_shell() -> None:
     window = LoginWindow()
     labels = [label.text() for label in window.findChildren(QLabel)]
@@ -52,7 +60,7 @@ def test_login_window_renders_expected_shell() -> None:
 
 
 def test_mode_selection_window_renders_all_three_modes() -> None:
-    window = ModeSelectWindow(camera_service=FakeCameraService())
+    window = ModeSelectWindow(camera_service=FakeCameraService(), draft_service=DraftService(unique_db_path('mode')))
     buttons = [button.text() for button in window.findChildren(QPushButton)]
     combo = window.findChild(QComboBox)
 
@@ -65,20 +73,27 @@ def test_mode_selection_window_renders_all_three_modes() -> None:
     assert combo.currentText() == "Document Camera"
 
 
-def test_shipment_window_renders_contract_aligned_fields() -> None:
-    window = ShipmentWindow(selected_camera_name="Document Camera")
+def test_shipment_window_can_save_and_load_draft() -> None:
+    draft_service = DraftService(unique_db_path('shipment'))
+    window = ShipmentWindow(selected_camera_name="Document Camera", draft_service=draft_service)
     labels = [label.text() for label in window.findChildren(QLabel)]
-    placeholders = [field.placeholderText() for field in window.findChildren(QLineEdit)]
+
+    window.fields["record_no"].setText("SHP-TEST-001")
+    window.fields["notes"].setText("Draft note")
+    window.save_draft()
+
+    reloaded = ShipmentWindow(selected_camera_name="Document Camera", draft_service=draft_service)
+    reloaded.load_latest_draft(show_empty_message=True)
 
     assert window.windowTitle() == "出貨小幫手 - 出貨作業"
     assert "Record Summary" in labels
     assert "目前選擇的相機：Document Camera" in labels
-    assert any(text == "預留欄位：record_no" for text in placeholders)
-    assert any(text == "預留欄位：attachments" for text in placeholders)
+    assert reloaded.fields["record_no"].text() == "SHP-TEST-001"
+    assert reloaded.fields["notes"].text() == "Draft note"
 
 
 def test_repair_window_renders_contract_aligned_fields() -> None:
-    window = RepairReceivingWindow(selected_camera_name="USB Camera")
+    window = RepairReceivingWindow(selected_camera_name="USB Camera", draft_service=DraftService(unique_db_path('repair')))
     labels = [label.text() for label in window.findChildren(QLabel)]
     placeholders = [field.placeholderText() for field in window.findChildren(QLineEdit)]
 
@@ -90,7 +105,7 @@ def test_repair_window_renders_contract_aligned_fields() -> None:
 
 
 def test_return_window_renders_contract_aligned_fields() -> None:
-    window = ReturnReceivingWindow(selected_camera_name="Document Camera")
+    window = ReturnReceivingWindow(selected_camera_name="Document Camera", draft_service=DraftService(unique_db_path('return')))
     labels = [label.text() for label in window.findChildren(QLabel)]
     placeholders = [field.placeholderText() for field in window.findChildren(QLineEdit)]
 
@@ -99,3 +114,15 @@ def test_return_window_renders_contract_aligned_fields() -> None:
     assert "目前選擇的相機：Document Camera" in labels
     assert any(text == "預留欄位：return_reason" for text in placeholders)
     assert any(text == "預留欄位：attachments" for text in placeholders)
+
+
+def test_database_initialization_creates_record_drafts_table() -> None:
+    db_path = unique_db_path('db')
+    initialize_database(db_path)
+
+    with connect(db_path) as connection:
+        row = connection.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'record_drafts'"
+        ).fetchone()
+
+    assert row is not None

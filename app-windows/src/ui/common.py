@@ -1,16 +1,7 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import (
-    QFrame,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QPushButton,
-    QSizePolicy,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 
 from app.version import APP_VERSION
 
@@ -91,38 +82,6 @@ def create_back_row(button_text: str = "返回模式選擇") -> tuple[QWidget, Q
     return row, back_button
 
 
-def create_form_section(title_text: str, field_labels: list[str]) -> QFrame:
-    section = QFrame()
-    section.setObjectName("subCard")
-    layout = QVBoxLayout(section)
-    layout.setContentsMargins(18, 18, 18, 18)
-    layout.setSpacing(12)
-
-    title = QLabel(title_text)
-    title.setObjectName("subSectionTitle")
-    layout.addWidget(title)
-
-    for label_text in field_labels:
-        row = QWidget()
-        row_layout = QHBoxLayout(row)
-        row_layout.setContentsMargins(0, 0, 0, 0)
-        row_layout.setSpacing(12)
-
-        label = QLabel(label_text)
-        label.setObjectName("fieldLabel")
-        label.setMinimumWidth(180)
-
-        field = QLineEdit()
-        field.setObjectName("placeholderField")
-        field.setPlaceholderText(f"預留欄位：{label_text}")
-
-        row_layout.addWidget(label)
-        row_layout.addWidget(field, 1)
-        layout.addWidget(row)
-
-    return section
-
-
 def app_stylesheet(primary_color: str = "#2563eb", hover_color: str = "#1d4ed8") -> str:
     return f"""
         QMainWindow {{
@@ -159,7 +118,7 @@ def app_stylesheet(primary_color: str = "#2563eb", hover_color: str = "#1d4ed8")
             font-size: 13px;
             color: #374151;
         }}
-        #cameraStatus {{
+        #cameraStatus, #draftStatus {{
             font-size: 13px;
             color: #334155;
         }}

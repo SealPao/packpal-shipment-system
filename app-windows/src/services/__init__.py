@@ -1,1 +1,1 @@
-﻿"""Service layer placeholders for future integrations."""
+"""Service layer helpers for camera selection and draft persistence."""
