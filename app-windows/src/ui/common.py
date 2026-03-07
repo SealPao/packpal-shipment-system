@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QPushButton,
     QSizePolicy,
     QVBoxLayout,
@@ -90,6 +91,38 @@ def create_back_row(button_text: str = "返回模式選擇") -> tuple[QWidget, Q
     return row, back_button
 
 
+def create_form_section(title_text: str, field_labels: list[str]) -> QFrame:
+    section = QFrame()
+    section.setObjectName("subCard")
+    layout = QVBoxLayout(section)
+    layout.setContentsMargins(18, 18, 18, 18)
+    layout.setSpacing(12)
+
+    title = QLabel(title_text)
+    title.setObjectName("subSectionTitle")
+    layout.addWidget(title)
+
+    for label_text in field_labels:
+        row = QWidget()
+        row_layout = QHBoxLayout(row)
+        row_layout.setContentsMargins(0, 0, 0, 0)
+        row_layout.setSpacing(12)
+
+        label = QLabel(label_text)
+        label.setObjectName("fieldLabel")
+        label.setMinimumWidth(180)
+
+        field = QLineEdit()
+        field.setObjectName("placeholderField")
+        field.setPlaceholderText(f"預留欄位：{label_text}")
+
+        row_layout.addWidget(label)
+        row_layout.addWidget(field, 1)
+        layout.addWidget(row)
+
+    return section
+
+
 def app_stylesheet(primary_color: str = "#2563eb", hover_color: str = "#1d4ed8") -> str:
     return f"""
         QMainWindow {{
@@ -117,10 +150,24 @@ def app_stylesheet(primary_color: str = "#2563eb", hover_color: str = "#1d4ed8")
             color: #4b5563;
             line-height: 1.6;
         }}
+        #subSectionTitle {{
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+        }}
+        #fieldLabel {{
+            font-size: 13px;
+            color: #374151;
+        }}
         #card {{
             background-color: white;
             border: 1px solid #dbe2ea;
             border-radius: 16px;
+        }}
+        #subCard {{
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
         }}
         QLabel {{
             color: #111827;

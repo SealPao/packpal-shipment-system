@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Iterable
+from typing import Iterable, Sequence
 
-from PySide6.QtWidgets import QLabel, QMainWindow, QWidget
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QMainWindow, QWidget
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from ui.common import (
@@ -11,6 +11,7 @@ from ui.common import (
     build_footer,
     create_back_row,
     create_card,
+    create_form_section,
     create_page_header,
 )
 
@@ -24,6 +25,7 @@ class OperationWindowBase(QMainWindow):
         section_title: str,
         section_body: str,
         checklist_items: Iterable[str],
+        form_sections: Sequence[tuple[str, list[str]]],
         parent_mode_select: QMainWindow | None = None,
         primary_color: str = "#2563eb",
         hover_color: str = "#1d4ed8",
@@ -43,6 +45,9 @@ class OperationWindowBase(QMainWindow):
         card, card_layout = create_card()
         card_layout.addWidget(self._build_section_title(section_title))
         card_layout.addWidget(self._build_section_body(section_body))
+
+        for section_title_text, field_labels in form_sections:
+            card_layout.addWidget(create_form_section(section_title_text, field_labels))
 
         for item in checklist_items:
             card_layout.addWidget(self._build_bullet(item))
@@ -76,13 +81,11 @@ class OperationWindowBase(QMainWindow):
 
     def _build_bullet(self, text: str) -> QWidget:
         row = QWidget()
-        from PySide6.QtWidgets import QHBoxLayout
-
         layout = QHBoxLayout(row)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
 
-        bullet = QLabel("•")
+        bullet = QLabel("-")
         bullet.setObjectName("sectionBody")
 
         content = QLabel(text)

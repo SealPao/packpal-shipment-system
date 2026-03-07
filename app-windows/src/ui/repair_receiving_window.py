@@ -10,6 +10,11 @@ class RepairReceivingWindow(OperationWindowBase):
             page_subtitle="此頁面為維修收貨流程骨架，後續將接入收件資訊、故障描述與文件拍攝。",
             section_title="預計整合的維修收貨步驟",
             section_body="先把操作入口和頁面節奏固定，之後再補實際欄位、附件與上傳任務。",
+            form_sections=[
+                ("收件資料", ["收貨單號", "客戶姓名", "聯絡電話"]),
+                ("商品資訊", ["商品名稱", "商品序號", "外觀狀態"]),
+                ("維修資訊", ["故障描述", "附件檢查", "備註"]),
+            ],
             checklist_items=[
                 "收貨單號與客戶資料輸入區",
                 "商品外觀與序號記錄區",

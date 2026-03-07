@@ -10,6 +10,11 @@ class ReturnReceivingWindow(OperationWindowBase):
             page_subtitle="此頁面為退貨收貨流程骨架，後續將接入退貨原因、檢查狀態與附件整理。",
             section_title="預計整合的退貨收貨步驟",
             section_body="先保留完整頁面骨架，讓後續的退貨檢查、分類與證據附件能直接填進來。",
+            form_sections=[
+                ("退貨資料", ["退貨單號", "來源通路", "客戶名稱"]),
+                ("商品檢查", ["商品名稱", "商品狀態", "退貨原因"]),
+                ("後續處理", ["附件整理", "處理標記", "備註"]),
+            ],
             checklist_items=[
                 "退貨單號與來源資訊輸入區",
                 "商品狀態檢查與分類區",
