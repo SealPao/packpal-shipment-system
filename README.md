@@ -1,23 +1,94 @@
-# PackPal Shipment System
+﻿# PackPal Shipment System
 
-出貨小幫手（PackPal）是一套倉儲影像存證與追溯系統。
+PackPal Shipment System (出貨小幫手) is organized as a small monorepo with three primary components:
 
-主要用途：
-- 出貨作業錄影
-- 維修收貨錄影
-- 退貨收貨錄影
-- 文件拍照與自動校正
-- NAS 後台查詢
+- `app-windows`: Windows workstation app for front-line operation flow
+- `server-api`: FastAPI backend intended for NAS deployment
+- `web-admin`: Web admin interface for search and management
+- `docs`: Product and flow documentation
+- `infra`: Infrastructure notes and deployment placeholders
 
-系統架構：
-- Windows Portable App
-- NAS Server API
-- Web Admin
+## Recommended Structure
 
-目前版本：
-- v0.1.0
+```text
+packpal-shipment-system
+|-- app-windows
+|   |-- src
+|   |   |-- app
+|   |   |-- db
+|   |   |-- services
+|   |   |-- ui
+|   |   `-- utils
+|   `-- requirements.txt
+|-- docs
+|-- infra
+|-- server-api
+|   |-- app
+|   |   |-- api
+|   |   |-- core
+|   |   `-- db
+|   `-- requirements.txt
+|-- web-admin
+|   |-- app
+|   |   `-- records
+|   |-- package.json
+|   `-- tsconfig.json
+|-- CHANGELOG.md
+`-- .gitignore
+```
 
-文件：
-- docs/system-spec.md
-- docs/ui-flow.md
-- docs/api-spec.md
+## Current Scope
+
+This repository currently provides a maintainable starting skeleton only.
+
+Implemented in `v0.1.0`:
+- Windows login window and mode selection window
+- FastAPI application startup with `/health`
+- Next.js admin shell with dashboard and records placeholder
+
+Not implemented yet:
+- Camera capture and OpenCV workflows
+- Business logic for shipment, repair, or return intake
+- Database schema and persistence
+- Real API integration between components
+
+## Local Development
+
+### 1. Windows App
+
+```powershell
+cd app-windows
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+$env:PYTHONPATH = "src"
+python src/main.py
+```
+
+### 2. Server API
+
+```powershell
+cd server-api
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+$env:PYTHONPATH = "."
+uvicorn app.main:app --reload
+```
+
+Open [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health).
+
+### 3. Web Admin
+
+```powershell
+cd web-admin
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+## Reference Docs
+
+- [System Spec](docs/system-spec.md)
+- [UI Flow](docs/ui-flow.md)
