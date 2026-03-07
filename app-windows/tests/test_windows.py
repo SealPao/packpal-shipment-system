@@ -33,34 +33,34 @@ def test_mode_selection_window_renders_all_three_modes() -> None:
     assert "返回登入" in buttons
 
 
-def test_shipment_window_renders_expected_sections() -> None:
+def test_shipment_window_renders_contract_aligned_fields() -> None:
     window = ShipmentWindow()
     labels = [label.text() for label in window.findChildren(QLabel)]
     placeholders = [field.placeholderText() for field in window.findChildren(QLineEdit)]
 
     assert window.windowTitle() == "出貨小幫手 - 出貨作業"
-    assert "預計整合的出貨步驟" in labels
-    assert "基本資料" in labels
-    assert any("預留欄位：出貨單號" == text for text in placeholders)
+    assert "Record Summary" in labels
+    assert any(text == "預留欄位：record_no" for text in placeholders)
+    assert any(text == "預留欄位：attachments" for text in placeholders)
 
 
-def test_repair_window_renders_expected_sections() -> None:
+def test_repair_window_renders_contract_aligned_fields() -> None:
     window = RepairReceivingWindow()
     labels = [label.text() for label in window.findChildren(QLabel)]
     placeholders = [field.placeholderText() for field in window.findChildren(QLineEdit)]
 
     assert window.windowTitle() == "出貨小幫手 - 維修收貨"
-    assert "預計整合的維修收貨步驟" in labels
-    assert "收件資料" in labels
-    assert any("預留欄位：故障描述" == text for text in placeholders)
+    assert "Repair Details" in labels
+    assert any(text == "預留欄位：notes" for text in placeholders)
+    assert any(text == "預留欄位：device_serial" for text in placeholders)
 
 
-def test_return_window_renders_expected_sections() -> None:
+def test_return_window_renders_contract_aligned_fields() -> None:
     window = ReturnReceivingWindow()
     labels = [label.text() for label in window.findChildren(QLabel)]
     placeholders = [field.placeholderText() for field in window.findChildren(QLineEdit)]
 
     assert window.windowTitle() == "出貨小幫手 - 退貨收貨"
-    assert "預計整合的退貨收貨步驟" in labels
-    assert "退貨資料" in labels
-    assert any("預留欄位：退貨原因" == text for text in placeholders)
+    assert "Return Details" in labels
+    assert any(text == "預留欄位：return_reason" for text in placeholders)
+    assert any(text == "預留欄位：attachments" for text in placeholders)

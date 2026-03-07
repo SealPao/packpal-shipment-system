@@ -7,19 +7,19 @@ class ReturnReceivingWindow(OperationWindowBase):
     def __init__(self, parent_mode_select=None) -> None:
         super().__init__(
             page_title="退貨收貨",
-            page_subtitle="此頁面為退貨收貨流程骨架，後續將接入退貨原因、檢查狀態與附件整理。",
+            page_subtitle="此頁面為退貨收貨流程骨架，欄位名稱已先對齊未來 record contract。",
             section_title="預計整合的退貨收貨步驟",
-            section_body="先保留完整頁面骨架，讓後續的退貨檢查、分類與證據附件能直接填進來。",
+            section_body="先讓退貨頁面與共通 record contract 對齊，後續再補檢查與分類邏輯。",
             form_sections=[
-                ("退貨資料", ["退貨單號", "來源通路", "客戶名稱"]),
-                ("商品檢查", ["商品名稱", "商品狀態", "退貨原因"]),
-                ("後續處理", ["附件整理", "處理標記", "備註"]),
+                ("Record Summary", ["record_no", "customer_name", "status"]),
+                ("Return Details", ["updated_at", "notes", "attachments"]),
+                ("Inspection Workflow", ["return_reason", "condition_check", "review_tag"]),
             ],
             checklist_items=[
-                "退貨單號與來源資訊輸入區",
-                "商品狀態檢查與分類區",
-                "退貨原因與備註欄位",
-                "附件拍攝與後續處理標記區",
+                "record_no 對應退貨單號",
+                "notes 對應退貨原因與處理備註",
+                "attachments 對應照片與佐證文件",
+                "status 對應檢查中、待確認或已完成狀態",
             ],
             parent_mode_select=parent_mode_select,
             primary_color="#7c3aed",
