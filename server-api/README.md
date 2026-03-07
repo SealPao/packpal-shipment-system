@@ -1,4 +1,4 @@
-﻿# Server API
+# Server API
 
 FastAPI skeleton intended for NAS-side deployment.
 
@@ -8,6 +8,7 @@ FastAPI skeleton intended for NAS-side deployment.
 - `app/core/config.py`: environment-driven settings
 - `app/api/routes_health.py`: health endpoint
 - `app/db`: placeholders for models and session wiring
+- `tests`: API smoke tests
 
 ## Run
 
@@ -17,6 +18,14 @@ python -m venv .venv
 pip install -r requirements.txt
 $env:PYTHONPATH = "."
 uvicorn app.main:app --reload
+```
+
+## Test
+
+```powershell
+pip install -r requirements.txt
+$env:PYTHONPATH = "."
+python -m pytest tests -q
 ```
 
 ## Available Endpoints

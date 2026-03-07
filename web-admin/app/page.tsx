@@ -1,4 +1,6 @@
-﻿const metrics = [
+import React from "react";
+
+const metrics = [
   {
     title: "Shipment Workspace",
     description: "Placeholder for shipment processing summaries and queue status.",

@@ -1,4 +1,6 @@
-﻿export default function RecordsPage() {
+import React from "react";
+
+export default function RecordsPage() {
   return (
     <main>
       <section className="hero panel">

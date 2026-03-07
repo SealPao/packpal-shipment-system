@@ -1,4 +1,4 @@
-﻿# PackPal Shipment System
+# PackPal Shipment System
 
 PackPal Shipment System (出貨小幫手) is organized as a small monorepo with three primary components:
 
@@ -19,6 +19,7 @@ packpal-shipment-system
 |   |   |-- services
 |   |   |-- ui
 |   |   `-- utils
+|   |-- tests
 |   `-- requirements.txt
 |-- docs
 |-- infra
@@ -27,10 +28,12 @@ packpal-shipment-system
 |   |   |-- api
 |   |   |-- core
 |   |   `-- db
+|   |-- tests
 |   `-- requirements.txt
 |-- web-admin
 |   |-- app
 |   |   `-- records
+|   |-- tests
 |   |-- package.json
 |   `-- tsconfig.json
 |-- CHANGELOG.md
@@ -45,6 +48,7 @@ Implemented in `v0.1.0`:
 - Windows login window and mode selection window
 - FastAPI application startup with `/health`
 - Next.js admin shell with dashboard and records placeholder
+- Minimal smoke tests for all three components
 
 Not implemented yet:
 - Camera capture and OpenCV workflows
@@ -87,6 +91,35 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+## Tests
+
+### Windows App
+
+```powershell
+cd app-windows
+pip install -r requirements.txt
+$env:PYTHONPATH = "src"
+$env:QT_QPA_PLATFORM = "offscreen"
+python -m pytest tests -q
+```
+
+### Server API
+
+```powershell
+cd server-api
+pip install -r requirements.txt
+$env:PYTHONPATH = "."
+python -m pytest tests -q
+```
+
+### Web Admin
+
+```powershell
+cd web-admin
+npm install
+npm test
+```
 
 ## Reference Docs
 

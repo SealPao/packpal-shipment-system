@@ -1,4 +1,4 @@
-﻿# Windows Workstation App
+# Windows Workstation App
 
 Desktop skeleton for the PackPal workstation client.
 
@@ -10,6 +10,7 @@ Desktop skeleton for the PackPal workstation client.
 - `src/services`: future integrations and workflows
 - `src/db`: local SQLite-related modules
 - `src/utils`: shared helpers
+- `tests`: minimal UI smoke tests
 
 ## Run
 
@@ -19,6 +20,15 @@ python -m venv .venv
 pip install -r requirements.txt
 $env:PYTHONPATH = "src"
 python src/main.py
+```
+
+## Test
+
+```powershell
+pip install -r requirements.txt
+$env:PYTHONPATH = "src"
+$env:QT_QPA_PLATFORM = "offscreen"
+python -m pytest tests -q
 ```
 
 ## Current Scope
