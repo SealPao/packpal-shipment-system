@@ -1,10 +1,9 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QFormLayout,
     QHBoxLayout,
-    QLabel,
     QLineEdit,
     QMainWindow,
     QMessageBox,
@@ -14,7 +13,7 @@ from PySide6.QtWidgets import (
 )
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
-from ui.common import ScreenContainer, build_footer
+from ui.common import ScreenContainer, app_stylesheet, build_footer, create_card, create_page_header
 from ui.mode_select_window import ModeSelectWindow
 
 
@@ -29,19 +28,7 @@ class LoginWindow(QMainWindow):
         container = ScreenContainer()
         self.setCentralWidget(container)
 
-        title = QLabel("PackPal Shipment System")
-        title.setObjectName("pageTitle")
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        subtitle = QLabel("請登入系統以開始作業")
-        subtitle.setObjectName("pageSubtitle")
-        subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        card = QWidget()
-        card.setObjectName("card")
-        card_layout = QVBoxLayout(card)
-        card_layout.setContentsMargins(24, 24, 24, 24)
-        card_layout.setSpacing(16)
+        card, card_layout = create_card()
 
         form = QFormLayout()
         form.setSpacing(12)
@@ -68,13 +55,12 @@ class LoginWindow(QMainWindow):
         card_layout.addLayout(action_row)
 
         container.layout.addStretch(1)
-        container.layout.addWidget(title)
-        container.layout.addWidget(subtitle)
+        container.layout.addWidget(create_page_header("PackPal Shipment System", "請登入系統以開始作業"))
         container.layout.addWidget(card)
         container.layout.addStretch(1)
         container.layout.addWidget(build_footer())
 
-        self.setStyleSheet(_build_stylesheet())
+        self.setStyleSheet(app_stylesheet())
 
     def handle_login(self) -> None:
         username = self.username_input.text().strip()
@@ -87,54 +73,3 @@ class LoginWindow(QMainWindow):
         self.mode_window = ModeSelectWindow(parent_login=self)
         self.mode_window.show()
         self.hide()
-
-
-
-def _build_stylesheet() -> str:
-    return """
-        QMainWindow {
-            background-color: #f5f7fb;
-        }
-        #screenContainer {
-            background-color: #f5f7fb;
-        }
-        #pageTitle {
-            font-size: 28px;
-            font-weight: 700;
-            color: #1f2937;
-        }
-        #pageSubtitle {
-            font-size: 15px;
-            color: #4b5563;
-        }
-        #card {
-            background-color: white;
-            border: 1px solid #dbe2ea;
-            border-radius: 16px;
-        }
-        QLabel {
-            color: #111827;
-        }
-        QLineEdit {
-            min-height: 38px;
-            padding: 6px 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            background-color: #ffffff;
-        }
-        QPushButton {
-            padding: 10px 18px;
-            border: none;
-            border-radius: 10px;
-            background-color: #2563eb;
-            color: white;
-            font-weight: 600;
-        }
-        QPushButton:hover {
-            background-color: #1d4ed8;
-        }
-        #footerLabel {
-            font-size: 12px;
-            color: #6b7280;
-        }
-    """

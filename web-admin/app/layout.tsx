@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import "./globals.css";
@@ -25,6 +25,9 @@ export default function RootLayout({
             <nav className="nav" aria-label="Primary">
               <Link href="/">Dashboard</Link>
               <Link href="/records">Records</Link>
+              <Link href="/shipments">Shipments</Link>
+              <Link href="/repairs">Repairs</Link>
+              <Link href="/returns">Returns</Link>
             </nav>
           </header>
           {children}

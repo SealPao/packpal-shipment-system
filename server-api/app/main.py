@@ -1,6 +1,6 @@
-﻿from fastapi import FastAPI
+from fastapi import FastAPI
 
-from app.api.routes_health import router as health_router
+from app.api.router import api_router
 from app.core.config import get_settings
 
 
@@ -12,7 +12,7 @@ def create_app() -> FastAPI:
         version=settings.app_version,
         debug=settings.debug,
     )
-    application.include_router(health_router)
+    application.include_router(api_router)
 
     @application.get("/", tags=["meta"])
     async def root() -> dict[str, str]:
