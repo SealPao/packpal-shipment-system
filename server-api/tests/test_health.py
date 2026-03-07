@@ -18,28 +18,38 @@ def test_health_endpoint_returns_expected_shape() -> None:
     }
 
 
-def test_shipment_placeholder_endpoint_returns_expected_shape() -> None:
-    response = client.get("/shipments/placeholder")
+def test_shipment_list_endpoint_returns_expected_shape() -> None:
+    response = client.get("/shipments")
 
     assert response.status_code == 200
     payload = response.json()
     assert payload["module"] == "shipments"
-    assert payload["status"] == "placeholder"
+    assert len(payload["items"]) >= 1
+    assert payload["items"][0]["record_no"].startswith("SHP-")
 
 
-def test_repair_placeholder_endpoint_returns_expected_shape() -> None:
-    response = client.get("/repairs/placeholder")
+def test_shipment_detail_endpoint_returns_expected_shape() -> None:
+    response = client.get("/shipments/shipment-001")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["module"] == "shipments"
+    assert payload["item"]["id"] == "shipment-001"
+
+
+def test_repair_list_endpoint_returns_expected_shape() -> None:
+    response = client.get("/repairs")
 
     assert response.status_code == 200
     payload = response.json()
     assert payload["module"] == "repairs"
-    assert payload["status"] == "placeholder"
+    assert payload["items"][0]["record_no"].startswith("RPR-")
 
 
-def test_return_placeholder_endpoint_returns_expected_shape() -> None:
-    response = client.get("/returns/placeholder")
+def test_return_detail_endpoint_returns_expected_shape() -> None:
+    response = client.get("/returns/return-001")
 
     assert response.status_code == 200
     payload = response.json()
     assert payload["module"] == "returns"
-    assert payload["status"] == "placeholder"
+    assert payload["item"]["id"] == "return-001"

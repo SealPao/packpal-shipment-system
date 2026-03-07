@@ -209,3 +209,6 @@ __marimo__/
 # Frontend
 web-admin/node_modules/
 web-admin/.next/
+
+!web-admin/lib/
+!web-admin/lib/**
