@@ -2,11 +2,11 @@
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent
-from PySide6.QtWidgets import QApplication, QFrame, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QPushButton, QVBoxLayout
+from PySide6.QtWidgets import QApplication, QFrame, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QPushButton, QVBoxLayout, QWidget
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from services.draft_service import DraftService
-from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_footer, create_back_row, create_card, create_page_header
+from ui.common import ScreenContainer, app_stylesheet, apply_window_icon
 
 
 class ShipmentWindow(QMainWindow):
@@ -21,64 +21,75 @@ class ShipmentWindow(QMainWindow):
         apply_window_icon(self)
 
         container = ScreenContainer()
+        container.layout.setContentsMargins(0, 0, 0, 0)
+        container.layout.setSpacing(0)
         self.setCentralWidget(container)
 
-        container.layout.addWidget(create_page_header("出貨作業", "理想流程會是先看到攝影機畫面，再掃描單號開始錄影；目前先提供骨架版介面。", show_logo=False))
+        stage = QFrame()
+        stage.setObjectName("cameraStage")
+        stage_layout = QVBoxLayout(stage)
+        stage_layout.setContentsMargins(24, 24, 24, 24)
+        stage_layout.setSpacing(0)
 
-        card, card_layout = create_card()
-        camera_frame = QFrame()
-        camera_frame.setObjectName("subCard")
-        camera_layout = QVBoxLayout(camera_frame)
-        camera_layout.setContentsMargins(18, 18, 18, 18)
-        camera_layout.setSpacing(10)
+        top_overlay = QHBoxLayout()
+        top_overlay.setContentsMargins(0, 0, 0, 0)
+        top_overlay.setSpacing(12)
+        title = QLabel("出貨作業")
+        title.setStyleSheet("color: white; font-size: 28px; font-weight: 700;")
+        camera_label = QLabel(f"相機：{self.selected_camera_name}")
+        camera_label.setStyleSheet("color: white; font-size: 14px; background: rgba(15,23,42,0.45); padding: 8px 12px; border-radius: 12px;")
+        top_overlay.addWidget(title)
+        top_overlay.addStretch(1)
+        top_overlay.addWidget(camera_label)
+        stage_layout.addLayout(top_overlay)
 
-        camera_title = QLabel(f"目前相機：{self.selected_camera_name}")
-        camera_title.setObjectName("sectionTitle")
-        camera_layout.addWidget(camera_title)
+        stage_layout.addStretch(1)
 
-        preview = QLabel("攝影機畫面預留區\n\n正式版會在這裡顯示即時畫面與錄影狀態。")
-        preview.setObjectName("sectionBody")
-        preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        preview.setMinimumHeight(220)
-        preview.setStyleSheet("border: 2px dashed #94a3b8; border-radius: 12px; background: #f8fafc;")
-        camera_layout.addWidget(preview)
+        center_prompt = QLabel("請掃描單號開始錄影")
+        center_prompt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        center_prompt.setStyleSheet("color: white; font-size: 36px; font-weight: 700;")
+        stage_layout.addWidget(center_prompt)
 
-        scan_label = QLabel("請掃描單號開始錄影")
-        scan_label.setObjectName("fieldLabel")
+        sub_prompt = QLabel("目前為骨架版，正式版會在這裡顯示即時攝影機畫面並開始錄影。")
+        sub_prompt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        sub_prompt.setStyleSheet("color: rgba(255,255,255,0.82); font-size: 16px;")
+        stage_layout.addWidget(sub_prompt)
+
+        stage_layout.addStretch(1)
+
+        bottom_overlay = QVBoxLayout()
+        bottom_overlay.setContentsMargins(0, 0, 0, 0)
+        bottom_overlay.setSpacing(12)
+
         self.scan_input = QLineEdit()
         self.scan_input.setPlaceholderText("請掃描或輸入單號")
-        camera_layout.addWidget(scan_label)
-        camera_layout.addWidget(self.scan_input)
-
-        status_label = QLabel("目前尚未接入真實錄影與相機串流；此頁先做操作位置與草稿流程。")
-        status_label.setObjectName("settingsHint")
-        status_label.setWordWrap(True)
-        camera_layout.addWidget(status_label)
+        self.scan_input.setMinimumHeight(56)
+        self.scan_input.setStyleSheet("font-size: 24px; background: rgba(255,255,255,0.96);")
+        bottom_overlay.addWidget(self.scan_input)
 
         action_row = QHBoxLayout()
-        save_button = QPushButton("儲存草稿")
-        save_button.clicked.connect(self.save_draft)
+        action_row.setSpacing(12)
+        back_button = QPushButton("返回模式選擇")
+        back_button.setObjectName("secondaryButton")
+        back_button.clicked.connect(self.go_back)
         load_button = QPushButton("載入最近草稿")
         load_button.setObjectName("secondaryButton")
         load_button.clicked.connect(self.load_latest_draft)
+        save_button = QPushButton("儲存草稿")
+        save_button.clicked.connect(self.save_draft)
         self.draft_status_label = QLabel("尚未儲存草稿")
-        self.draft_status_label.setObjectName("draftStatus")
-        action_row.addWidget(save_button)
+        self.draft_status_label.setStyleSheet("color: white; font-size: 14px;")
+        action_row.addWidget(back_button)
         action_row.addWidget(load_button)
-        action_row.addWidget(self.draft_status_label, 1)
-        camera_layout.addLayout(action_row)
+        action_row.addWidget(save_button)
+        action_row.addStretch(1)
+        action_row.addWidget(self.draft_status_label)
+        bottom_overlay.addLayout(action_row)
+        stage_layout.addLayout(bottom_overlay)
 
-        card_layout.addWidget(camera_frame)
-        back_row, back_button = create_back_row()
-        back_button.clicked.connect(self.go_back)
-        card_layout.addWidget(back_row)
-
-        container.layout.addWidget(card)
-        container.layout.addStretch(1)
-        container.layout.addWidget(build_footer())
-
+        container.layout.addWidget(stage)
         self.load_latest_draft()
-        self.setStyleSheet(app_stylesheet("#0f766e", "#0d5f59"))
+        self.setStyleSheet(app_stylesheet("#0f766e", "#0d5f59") + "QFrame#cameraStage { background: qlineargradient(x1:0,y1:0,x2:1,y2:1, stop:0 #0f172a, stop:1 #134e4a); }")
 
     def closeEvent(self, event: QCloseEvent) -> None:
         app = QApplication.instance()

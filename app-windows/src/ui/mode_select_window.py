@@ -1,7 +1,7 @@
 ﻿from __future__ import annotations
 
 from PySide6.QtGui import QCloseEvent
-from PySide6.QtWidgets import QApplication, QComboBox, QGridLayout, QHBoxLayout, QLabel, QMainWindow, QPushButton
+from PySide6.QtWidgets import QApplication, QComboBox, QHBoxLayout, QLabel, QMainWindow, QPushButton, QVBoxLayout, QWidget
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from services.camera_service import CameraOption, CameraService
@@ -36,48 +36,53 @@ class ModeSelectWindow(QMainWindow):
         self.setCentralWidget(container)
 
         container.layout.addStretch(1)
-        container.layout.addWidget(create_page_header("選擇作業模式", "請直接選擇要進行的作業；攝影機只在角落確認即可。"))
+        container.layout.addWidget(create_page_header("選擇作業模式", "請直接選擇要進行的作業。"))
 
         card, card_layout = create_card()
-        top_row = QHBoxLayout()
         operator_label = QLabel(self._operator_text())
         operator_label.setObjectName("cameraStatus")
-        top_row.addWidget(operator_label)
-        top_row.addStretch(1)
-        top_row.addWidget(QLabel("作業相機"))
-        self.camera_combo = QComboBox()
-        self.camera_combo.setMinimumWidth(260)
-        self.camera_combo.currentIndexChanged.connect(self.persist_selected_camera)
-        top_row.addWidget(self.camera_combo)
-        card_layout.addLayout(top_row)
+        card_layout.addWidget(operator_label)
 
-        mode_grid = QGridLayout()
-        mode_grid.setContentsMargins(0, 0, 0, 0)
-        mode_grid.setHorizontalSpacing(14)
-        mode_grid.setVerticalSpacing(14)
-
+        mode_row = QHBoxLayout()
+        mode_row.setSpacing(16)
         shipment_button = create_mode_button("出貨作業")
         repair_button = create_mode_button("維修收貨")
         return_button = create_mode_button("退貨收貨")
         shipment_button.clicked.connect(lambda: self.open_child_window(ShipmentWindow(self, self.selected_camera_name(), self.draft_service)))
         repair_button.clicked.connect(lambda: self.open_child_window(RepairReceivingWindow(self, self.selected_camera_name(), self.draft_service)))
         return_button.clicked.connect(lambda: self.open_child_window(ReturnReceivingWindow(self, self.selected_camera_name(), self.draft_service)))
-        mode_grid.addWidget(shipment_button, 0, 0)
-        mode_grid.addWidget(repair_button, 0, 1)
-        mode_grid.addWidget(return_button, 1, 0, 1, 2)
-        card_layout.addLayout(mode_grid)
+        mode_row.addWidget(shipment_button)
+        mode_row.addWidget(repair_button)
+        mode_row.addWidget(return_button)
+        card_layout.addLayout(mode_row)
 
-        action_row = QHBoxLayout()
+        bottom_row = QHBoxLayout()
+        bottom_row.setSpacing(12)
+        left_actions = QHBoxLayout()
         settings_button = QPushButton("系統設定")
         settings_button.setObjectName("secondaryButton")
         settings_button.clicked.connect(self.open_settings)
         back_button = QPushButton("返回登入")
         back_button.setObjectName("secondaryButton")
         back_button.clicked.connect(self.go_back)
-        action_row.addWidget(settings_button)
-        action_row.addWidget(back_button)
-        action_row.addStretch(1)
-        card_layout.addLayout(action_row)
+        left_actions.addWidget(settings_button)
+        left_actions.addWidget(back_button)
+        left_actions_widget = QWidget()
+        left_actions_widget.setLayout(left_actions)
+
+        right_camera = QHBoxLayout()
+        right_camera.addWidget(QLabel("作業相機"))
+        self.camera_combo = QComboBox()
+        self.camera_combo.setMinimumWidth(240)
+        self.camera_combo.currentIndexChanged.connect(self.persist_selected_camera)
+        right_camera.addWidget(self.camera_combo)
+        right_camera_widget = QWidget()
+        right_camera_widget.setLayout(right_camera)
+
+        bottom_row.addWidget(left_actions_widget)
+        bottom_row.addStretch(1)
+        bottom_row.addWidget(right_camera_widget)
+        card_layout.addLayout(bottom_row)
 
         container.layout.addWidget(card)
         container.layout.addStretch(1)

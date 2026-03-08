@@ -73,7 +73,7 @@ def test_login_window_uses_employee_lookup() -> None:
 
     assert window.windowTitle() == "出貨小幫手 - 進入作業"
     assert len(edits) == 1
-    assert edits[0].placeholderText() == "請輸入員工編號"
+    assert edits[0].placeholderText() == "員工號碼"
     assert "系統設定" in buttons
     assert "請點我開始工作" in buttons
 
@@ -125,7 +125,7 @@ def test_shipment_window_can_save_and_load_draft() -> None:
     reloaded = ShipmentWindow(selected_camera_name="Document Camera", draft_service=draft_service)
     reloaded.load_latest_draft()
 
-    assert any("攝影機畫面預留區" in text for text in labels)
+    assert any("請掃描單號開始錄影" in text for text in labels)
     assert reloaded.scan_input.text() == "SHP-TEST-001"
 
 
@@ -156,4 +156,5 @@ def test_database_initialization_creates_record_drafts_table() -> None:
     with connect(db_path) as connection:
         row = connection.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'record_drafts'").fetchone()
     assert row is not None
+
 
