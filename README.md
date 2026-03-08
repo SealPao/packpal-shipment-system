@@ -20,6 +20,7 @@ packpal-shipment-system
 |   |   |-- ui
 |   |   `-- utils
 |   |-- tests
+|   |-- build.ps1
 |   `-- requirements.txt
 |-- docs
 |-- infra
@@ -27,12 +28,15 @@ packpal-shipment-system
 |   |-- app
 |   |   |-- api
 |   |   |-- core
-|   |   `-- db
+|   |   |-- db
+|   |   |-- schemas
+|   |   `-- services
 |   |-- tests
 |   `-- requirements.txt
 |-- web-admin
 |   |-- app
-|   |   `-- records
+|   |-- components
+|   |-- lib
 |   |-- tests
 |   |-- package.json
 |   `-- tsconfig.json
@@ -42,19 +46,20 @@ packpal-shipment-system
 
 ## Current Scope
 
-This repository currently provides a maintainable starting skeleton only.
+This repository currently provides an expandable system skeleton with a usable Windows app prototype.
 
 Implemented in `v0.1.0`:
-- Windows login window and mode selection window
-- FastAPI application startup with `/health`
-- Next.js admin shell with dashboard and records placeholder
+- Windows login window, camera selection, mode selection, and workflow shells
+- Local SQLite-backed draft persistence in the Windows app
+- FastAPI application startup with health plus placeholder record list/detail endpoints
+- Next.js admin shell with placeholder list/detail pages and shared record components
 - Minimal smoke tests for all three components
 
 Not implemented yet:
 - Camera capture and OpenCV workflows
-- Business logic for shipment, repair, or return intake
-- Database schema and persistence
-- Real API integration between components
+- Full business logic for shipment, repair, or return intake
+- Real database migrations and production persistence
+- Real API integration between all components
 
 ## Local Development
 
@@ -119,6 +124,13 @@ python -m pytest tests -q
 cd web-admin
 npm install
 npm test
+```
+
+## Build Windows EXE
+
+```powershell
+cd app-windows
+.\build.ps1
 ```
 
 ## Reference Docs
