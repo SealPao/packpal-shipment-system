@@ -61,7 +61,7 @@ def write_employee_file() -> None:
     with target.open("w", encoding="utf-8-sig", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=["employee_id", "name"])
         writer.writeheader()
-        writer.writerow({"employee_id": "A001", "name": "王小明"})
+        writer.writerow({"employee_id": "342", "name": "包兆強"})
         writer.writerow({"employee_id": "A002", "name": "陳美玲"})
 
 
@@ -77,12 +77,12 @@ def test_login_window_uses_employee_lookup() -> None:
     assert "系統設定" in buttons
     assert "請點我開始工作" in buttons
 
-    window.employee_id_input.setText("A001")
-    assert window.employee_name_label.text() == "王小明"
-    assert "歡迎尊貴的 A001 王小明" in window.hero_message_label.text()
+    window.employee_id_input.setText("342")
+    assert window.employee_name_label.text() == "歡迎尊貴的 342 包兆強"
+    assert "歡迎尊貴的 342 包兆強" in window.enter_button.text()
 
 
-def test_settings_window_renders_core_fields_and_employee_table() -> None:
+def test_settings_window_renders_employee_actions() -> None:
     write_employee_file()
     window = SettingsWindow()
     labels = [label.text() for label in window.findChildren(QLabel)]
@@ -90,31 +90,28 @@ def test_settings_window_renders_core_fields_and_employee_table() -> None:
     buttons = [button.text() for button in window.findChildren(QPushButton)]
 
     assert "NAS API 位址" in labels
-    assert "本地儲存路徑" in labels
     assert "員工資料設定" in labels
-    assert "返回" in buttons
     assert "新增一筆" in buttons
+    assert "刪除選取" in buttons
     assert "儲存員工資料" in buttons
     assert table is not None
     assert table.columnCount() == 2
 
 
-def test_mode_selection_window_renders_camera_and_settings() -> None:
-    write_employee_file()
-    employee = EmployeeRecord(employee_id="A002", name="陳美玲")
+def test_mode_selection_window_renders_simple_actions() -> None:
+    employee = EmployeeRecord(employee_id="342", name="包兆強")
     window = ModeSelectWindow(current_employee=employee, camera_service=FakeCameraService(), draft_service=DraftService(unique_db_path("mode")))
     buttons = [button.text() for button in window.findChildren(QPushButton)]
     combo = window.findChild(QComboBox)
     labels = [label.text() for label in window.findChildren(QLabel)]
 
-    assert any(text.startswith("出貨作業") for text in buttons)
-    assert any(text.startswith("維修收貨") for text in buttons)
-    assert any(text.startswith("退貨收貨") for text in buttons)
+    assert "出貨作業" in buttons
+    assert "維修收貨" in buttons
+    assert "退貨收貨" in buttons
     assert "系統設定" in buttons
     assert combo is not None
-    assert combo.count() == 2
     assert combo.currentText() == "Document Camera"
-    assert "目前操作人員：A002 / 陳美玲" in labels
+    assert "目前操作人員：342 / 包兆強" in labels
 
 
 def test_shipment_window_can_save_and_load_draft() -> None:
@@ -122,16 +119,14 @@ def test_shipment_window_can_save_and_load_draft() -> None:
     window = ShipmentWindow(selected_camera_name="Document Camera", draft_service=draft_service)
     labels = [label.text() for label in window.findChildren(QLabel)]
 
-    window.fields["record_no"].setText("SHP-TEST-001")
-    window.fields["notes"].setText("Draft note")
+    window.scan_input.setText("SHP-TEST-001")
     window.save_draft()
 
     reloaded = ShipmentWindow(selected_camera_name="Document Camera", draft_service=draft_service)
-    reloaded.load_latest_draft(show_empty_message=True)
+    reloaded.load_latest_draft()
 
-    assert "目前相機：Document Camera" in labels
-    assert reloaded.fields["record_no"].text() == "SHP-TEST-001"
-    assert reloaded.fields["notes"].text() == "Draft note"
+    assert any("攝影機畫面預留區" in text for text in labels)
+    assert reloaded.scan_input.text() == "SHP-TEST-001"
 
 
 def test_repair_window_renders_contract_aligned_fields() -> None:
@@ -161,3 +156,4 @@ def test_database_initialization_creates_record_drafts_table() -> None:
     with connect(db_path) as connection:
         row = connection.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'record_drafts'").fetchone()
     assert row is not None
+

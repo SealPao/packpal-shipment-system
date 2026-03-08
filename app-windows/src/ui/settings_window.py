@@ -2,7 +2,21 @@
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent
-from PySide6.QtWidgets import QApplication, QFileDialog, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton, QScrollArea, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QApplication,
+    QFileDialog,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QMessageBox,
+    QPushButton,
+    QScrollArea,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from services.employee_service import EmployeeRecord, EmployeeService
@@ -11,7 +25,12 @@ from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_
 
 
 class SettingsWindow(QMainWindow):
-    def __init__(self, parent_window: QMainWindow | None = None, settings_service: SettingsService | None = None, employee_service: EmployeeService | None = None) -> None:
+    def __init__(
+        self,
+        parent_window: QMainWindow | None = None,
+        settings_service: SettingsService | None = None,
+        employee_service: EmployeeService | None = None,
+    ) -> None:
         super().__init__(parent_window)
         self.parent_window = parent_window
         self.settings_service = settings_service or SettingsService()
@@ -24,18 +43,15 @@ class SettingsWindow(QMainWindow):
 
         container = ScreenContainer()
         self.setCentralWidget(container)
-        container.layout.setSpacing(16)
 
         top_bar = QHBoxLayout()
-        top_bar.setContentsMargins(0, 0, 0, 0)
         back_button = QPushButton("返回")
         back_button.setObjectName("secondaryButton")
         back_button.clicked.connect(self.go_back)
         top_bar.addWidget(back_button)
         top_bar.addStretch(1)
-
         container.layout.addLayout(top_bar)
-        container.layout.addWidget(create_page_header("系統設定", "這裡可設定 NAS、本地儲存，並可直接編輯員工資料。", show_logo=False))
+        container.layout.addWidget(create_page_header("系統設定", "可設定 NAS、本地儲存，並可直接增刪改員工資料。", show_logo=False))
 
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
@@ -50,11 +66,6 @@ class SettingsWindow(QMainWindow):
         settings_title = QLabel("連線與儲存")
         settings_title.setObjectName("sectionTitle")
         settings_layout.addWidget(settings_title)
-
-        settings_hint = QLabel("先設定 NAS API 與本地儲存位置。相機選擇仍保留在模式選擇頁。")
-        settings_hint.setObjectName("settingsHint")
-        settings_hint.setWordWrap(True)
-        settings_layout.addWidget(settings_hint)
 
         self.nas_url_input = QLineEdit(settings.nas_url)
         self.nas_url_input.setPlaceholderText("例如：http://192.168.1.100:8000")
@@ -75,8 +86,6 @@ class SettingsWindow(QMainWindow):
         settings_layout.addWidget(self._build_field_block("本地儲存路徑", storage_widget))
 
         save_row = QHBoxLayout()
-        save_row.setContentsMargins(0, 0, 0, 0)
-        save_row.setSpacing(12)
         save_button = QPushButton("儲存連線設定")
         save_button.clicked.connect(self.save_settings)
         save_row.addWidget(save_button)
@@ -88,10 +97,10 @@ class SettingsWindow(QMainWindow):
         employee_title.setObjectName("sectionTitle")
         employee_layout.addWidget(employee_title)
 
-        employee_hint = QLabel("表格可直接編輯。新增或修改後，按「儲存員工資料」即可覆蓋目前員工檔。")
-        employee_hint.setObjectName("settingsHint")
-        employee_hint.setWordWrap(True)
-        employee_layout.addWidget(employee_hint)
+        hint = QLabel("表格可直接編輯。選取一筆後可刪除，完成後按「儲存員工資料」。")
+        hint.setObjectName("settingsHint")
+        hint.setWordWrap(True)
+        employee_layout.addWidget(hint)
 
         self.employee_file_label = QLabel()
         self.employee_file_label.setObjectName("settingsHint")
@@ -99,11 +108,12 @@ class SettingsWindow(QMainWindow):
         employee_layout.addWidget(self.employee_file_label)
 
         employee_button_row = QHBoxLayout()
-        employee_button_row.setContentsMargins(0, 0, 0, 0)
-        employee_button_row.setSpacing(12)
         add_row_button = QPushButton("新增一筆")
         add_row_button.setObjectName("secondaryButton")
         add_row_button.clicked.connect(self.add_employee_row)
+        delete_row_button = QPushButton("刪除選取")
+        delete_row_button.setObjectName("secondaryButton")
+        delete_row_button.clicked.connect(self.delete_selected_rows)
         download_button = QPushButton("下載範例檔")
         download_button.setObjectName("secondaryButton")
         download_button.clicked.connect(self.download_sample_file)
@@ -113,6 +123,7 @@ class SettingsWindow(QMainWindow):
         save_employee_button = QPushButton("儲存員工資料")
         save_employee_button.clicked.connect(self.save_employee_table)
         employee_button_row.addWidget(add_row_button)
+        employee_button_row.addWidget(delete_row_button)
         employee_button_row.addWidget(download_button)
         employee_button_row.addWidget(import_button)
         employee_button_row.addWidget(save_employee_button)
@@ -123,6 +134,7 @@ class SettingsWindow(QMainWindow):
         self.employee_table.setHorizontalHeaderLabels(["員工編號", "員工名稱"])
         self.employee_table.verticalHeader().setVisible(False)
         self.employee_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.employee_table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
         self.employee_table.setAlternatingRowColors(True)
         self.employee_table.horizontalHeader().setStretchLastSection(True)
         self.employee_table.setMinimumHeight(260)
@@ -153,7 +165,6 @@ class SettingsWindow(QMainWindow):
         layout = QVBoxLayout(block)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
-
         label = QLabel(label_text)
         label.setObjectName("fieldLabel")
         layout.addWidget(label)
@@ -181,6 +192,15 @@ class SettingsWindow(QMainWindow):
         self.employee_table.setCurrentCell(row_index, 0)
         self.employee_table.editItem(self.employee_table.item(row_index, 0))
 
+    def delete_selected_rows(self) -> None:
+        rows = sorted({index.row() for index in self.employee_table.selectedIndexes()}, reverse=True)
+        if not rows:
+            QMessageBox.information(self, "尚未選取", "請先選取要刪除的員工資料。")
+            return
+        for row in rows:
+            self.employee_table.removeRow(row)
+        self.employee_count_label.setText(f"目前員工資料筆數：{self.employee_table.rowCount()}")
+
     def download_sample_file(self) -> None:
         target_path, _ = QFileDialog.getSaveFileName(self, "下載員工範例檔", "packpal-employees-sample.csv", "CSV 檔案 (*.csv)")
         if not target_path:
@@ -192,13 +212,11 @@ class SettingsWindow(QMainWindow):
         source_path, _ = QFileDialog.getOpenFileName(self, "匯入員工檔", "", "CSV 檔案 (*.csv)")
         if not source_path:
             return
-
         try:
             count = self.employee_service.import_csv(source_path)
         except ValueError as error:
             QMessageBox.warning(self, "匯入失敗", str(error))
             return
-
         self.refresh_employee_table()
         QMessageBox.information(self, "匯入完成", f"已匯入 {count} 筆員工資料。")
 
@@ -211,11 +229,9 @@ class SettingsWindow(QMainWindow):
             name = name_item.text().strip() if name_item else ""
             if employee_id and name:
                 records.append(EmployeeRecord(employee_id=employee_id, name=name))
-
         if not records:
             QMessageBox.warning(self, "資料不足", "請至少保留一筆完整的員工編號與員工名稱。")
             return
-
         count = self.employee_service.save_records(records)
         self.refresh_employee_table()
         QMessageBox.information(self, "儲存完成", f"已儲存 {count} 筆員工資料。")

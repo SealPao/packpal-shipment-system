@@ -1,7 +1,7 @@
 ﻿from __future__ import annotations
 
 from PySide6.QtGui import QCloseEvent
-from PySide6.QtWidgets import QApplication, QComboBox, QGridLayout, QHBoxLayout, QLabel, QMainWindow, QPushButton, QWidget
+from PySide6.QtWidgets import QApplication, QComboBox, QGridLayout, QHBoxLayout, QLabel, QMainWindow, QPushButton
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from services.camera_service import CameraOption, CameraService
@@ -35,36 +35,37 @@ class ModeSelectWindow(QMainWindow):
         container = ScreenContainer()
         self.setCentralWidget(container)
 
-        status_card, status_layout = create_card()
-        status_layout.addWidget(self._build_employee_status())
-        status_layout.addWidget(self._build_camera_section())
+        container.layout.addStretch(1)
+        container.layout.addWidget(create_page_header("選擇作業模式", "請直接選擇要進行的作業；攝影機只在角落確認即可。"))
 
-        mode_card, mode_layout = create_card()
-        mode_title = QLabel("請選擇作業模式")
-        mode_title.setObjectName("sectionTitle")
-        mode_layout.addWidget(mode_title)
-
-        mode_hint = QLabel("目前三個作業頁都還是骨架版，已可切換與存草稿，但正式業務流程尚未完成。")
-        mode_hint.setObjectName("settingsHint")
-        mode_hint.setWordWrap(True)
-        mode_layout.addWidget(mode_hint)
+        card, card_layout = create_card()
+        top_row = QHBoxLayout()
+        operator_label = QLabel(self._operator_text())
+        operator_label.setObjectName("cameraStatus")
+        top_row.addWidget(operator_label)
+        top_row.addStretch(1)
+        top_row.addWidget(QLabel("作業相機"))
+        self.camera_combo = QComboBox()
+        self.camera_combo.setMinimumWidth(260)
+        self.camera_combo.currentIndexChanged.connect(self.persist_selected_camera)
+        top_row.addWidget(self.camera_combo)
+        card_layout.addLayout(top_row)
 
         mode_grid = QGridLayout()
         mode_grid.setContentsMargins(0, 0, 0, 0)
         mode_grid.setHorizontalSpacing(14)
         mode_grid.setVerticalSpacing(14)
 
-        shipment_button = create_mode_button("出貨作業\n整理出貨資料與草稿")
-        repair_button = create_mode_button("維修收貨\n建立維修收貨草稿")
-        return_button = create_mode_button("退貨收貨\n建立退貨收貨草稿")
+        shipment_button = create_mode_button("出貨作業")
+        repair_button = create_mode_button("維修收貨")
+        return_button = create_mode_button("退貨收貨")
         shipment_button.clicked.connect(lambda: self.open_child_window(ShipmentWindow(self, self.selected_camera_name(), self.draft_service)))
         repair_button.clicked.connect(lambda: self.open_child_window(RepairReceivingWindow(self, self.selected_camera_name(), self.draft_service)))
         return_button.clicked.connect(lambda: self.open_child_window(ReturnReceivingWindow(self, self.selected_camera_name(), self.draft_service)))
-
         mode_grid.addWidget(shipment_button, 0, 0)
         mode_grid.addWidget(repair_button, 0, 1)
         mode_grid.addWidget(return_button, 1, 0, 1, 2)
-        mode_layout.addLayout(mode_grid)
+        card_layout.addLayout(mode_grid)
 
         action_row = QHBoxLayout()
         settings_button = QPushButton("系統設定")
@@ -76,12 +77,9 @@ class ModeSelectWindow(QMainWindow):
         action_row.addWidget(settings_button)
         action_row.addWidget(back_button)
         action_row.addStretch(1)
-        mode_layout.addLayout(action_row)
+        card_layout.addLayout(action_row)
 
-        container.layout.addStretch(1)
-        container.layout.addWidget(create_page_header("選擇作業模式", "先確認目前操作人員與相機，再進入對應作業。"))
-        container.layout.addWidget(status_card)
-        container.layout.addWidget(mode_card)
+        container.layout.addWidget(card)
         container.layout.addStretch(1)
         container.layout.addWidget(build_footer())
 
@@ -94,47 +92,19 @@ class ModeSelectWindow(QMainWindow):
             app.quit()
         event.accept()
 
-    def _build_employee_status(self) -> QLabel:
+    def _operator_text(self) -> str:
         if self.current_employee is None:
-            text = "目前尚未帶入操作人員。"
-        else:
-            text = f"目前操作人員：{self.current_employee.employee_id} / {self.current_employee.name}"
-        label = QLabel(text)
-        label.setObjectName("cameraStatus")
-        return label
-
-    def _build_camera_section(self) -> QWidget:
-        wrapper = QWidget()
-        layout = QHBoxLayout(wrapper)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(12)
-
-        label = QLabel("作業相機")
-        label.setMinimumWidth(90)
-        self.camera_combo = QComboBox()
-        self.camera_combo.currentIndexChanged.connect(self.persist_selected_camera)
-        self.refresh_button = QPushButton("重新整理相機")
-        self.refresh_button.setObjectName("secondaryButton")
-        self.refresh_button.clicked.connect(self.refresh_camera_options)
-        self.camera_status_label = QLabel()
-        self.camera_status_label.setObjectName("cameraStatus")
-
-        layout.addWidget(label)
-        layout.addWidget(self.camera_combo, 1)
-        layout.addWidget(self.refresh_button)
-        layout.addWidget(self.camera_status_label)
-        return wrapper
+            return "目前尚未帶入操作人員。"
+        return f"目前操作人員：{self.current_employee.employee_id} / {self.current_employee.name}"
 
     def refresh_camera_options(self) -> None:
         self.cameras = self.camera_service.list_cameras()
         selected_camera = self.camera_service.get_selected_camera(self.cameras)
         self.camera_combo.blockSignals(True)
         self.camera_combo.clear()
-
         if not self.cameras:
             self.camera_combo.addItem("沒有偵測到相機", "")
             self.camera_combo.setEnabled(False)
-            self.camera_status_label.setText("目前沒有可用相機。")
         else:
             self.camera_combo.setEnabled(True)
             for camera in self.cameras:
@@ -145,18 +115,13 @@ class ModeSelectWindow(QMainWindow):
                     if camera.id == selected_camera.id:
                         selected_index = index
                         break
-                self.camera_status_label.setText(f"已選擇相機：{selected_camera.name}")
-            else:
-                self.camera_status_label.setText("請選擇作業相機。")
             self.camera_combo.setCurrentIndex(selected_index)
-
         self.camera_combo.blockSignals(False)
 
     def persist_selected_camera(self) -> None:
         camera_id = str(self.camera_combo.currentData())
         if camera_id:
             self.camera_service.save_selected_camera_id(camera_id)
-            self.camera_status_label.setText(f"已選擇相機：{self.selected_camera_name()}")
 
     def selected_camera_name(self) -> str | None:
         camera_id = str(self.camera_combo.currentData())

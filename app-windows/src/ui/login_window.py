@@ -43,35 +43,26 @@ class LoginWindow(QMainWindow):
         self.employee_name_label.setObjectName("heroName")
         self.employee_name_label.setWordWrap(True)
 
-        self.employee_status_label = QLabel("歡迎尊貴的夥伴，請輸入員工編號後開始工作。")
-        self.employee_status_label.setObjectName("employeeStatus")
-        self.employee_status_label.setWordWrap(True)
+        self.enter_button = QPushButton("請點我開始工作")
+        self.enter_button.setMinimumHeight(72)
+        self.enter_button.clicked.connect(self.handle_enter)
 
-        self.hero_message_label = QLabel("請點我開始工作")
-        self.hero_message_label.setObjectName("sectionBody")
-        self.hero_message_label.setWordWrap(True)
+        helper_label = QLabel("若查不到員工，請到系統設定編輯或匯入員工資料。")
+        helper_label.setObjectName("employeeStatus")
+        helper_label.setWordWrap(True)
 
-        form_layout = QVBoxLayout()
-        form_layout.setSpacing(12)
-        form_layout.addWidget(prompt_label)
-        form_layout.addWidget(self.employee_id_input)
-        form_layout.addWidget(self.employee_name_label)
-        form_layout.addWidget(self.hero_message_label)
-        form_layout.addWidget(self.employee_status_label)
+        card_layout.addWidget(prompt_label)
+        card_layout.addWidget(self.employee_id_input)
+        card_layout.addWidget(self.employee_name_label)
+        card_layout.addWidget(self.enter_button)
+        card_layout.addWidget(helper_label)
 
         action_row = QHBoxLayout()
         settings_button = QPushButton("系統設定")
         settings_button.setObjectName("secondaryButton")
         settings_button.clicked.connect(self.open_settings)
-
-        enter_button = QPushButton("請點我開始工作")
-        enter_button.clicked.connect(self.handle_enter)
-
         action_row.addWidget(settings_button)
         action_row.addStretch(1)
-        action_row.addWidget(enter_button)
-
-        card_layout.addLayout(form_layout)
         card_layout.addLayout(action_row)
 
         container.layout.addStretch(1)
@@ -96,16 +87,13 @@ class LoginWindow(QMainWindow):
         if employee is None:
             self.employee_name_label.setText("尚未帶出員工名稱")
             if employee_id:
-                self.hero_message_label.setText("查無此員工編號，請先確認或到系統設定修正員工資料。")
-                self.employee_status_label.setText("歡迎尊貴的夥伴，請確認員工編號後再開始工作。")
+                self.enter_button.setText("查無員工，請先修正資料")
             else:
-                self.hero_message_label.setText("請點我開始工作")
-                self.employee_status_label.setText("歡迎尊貴的夥伴，請輸入員工編號後開始工作。")
+                self.enter_button.setText("請點我開始工作")
             return
 
-        self.employee_name_label.setText(employee.name)
-        self.hero_message_label.setText(f"歡迎尊貴的 {employee.employee_id} {employee.name}，請點我開始工作")
-        self.employee_status_label.setText(f"已帶出員工：{employee.employee_id} / {employee.name}")
+        self.employee_name_label.setText(f"歡迎尊貴的 {employee.employee_id} {employee.name}")
+        self.enter_button.setText(f"歡迎尊貴的 {employee.employee_id} {employee.name}，請點我開始工作")
 
     def handle_enter(self) -> None:
         employee_id = self.employee_id_input.text().strip()
