@@ -2,12 +2,12 @@
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent
-from PySide6.QtWidgets import QApplication, QFrame, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QApplication, QFrame, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton, QVBoxLayout, QWidget
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from services.employee_service import EmployeeRecord, EmployeeService
 from services.settings_service import SettingsService
-from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_footer, create_card, create_page_header
+from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_footer, create_card, create_page_header, show_window_like
 from ui.mode_select_window import ModeSelectWindow
 from ui.settings_window import SettingsWindow
 
@@ -33,9 +33,9 @@ class LoginWindow(QMainWindow):
 
         input_shell = QFrame()
         input_shell.setObjectName("heroInputShell")
-        input_layout = QHBoxLayout(input_shell)
-        input_layout.setContentsMargins(18, 8, 18, 8)
-        input_layout.setSpacing(12)
+        input_layout = QVBoxLayout(input_shell)
+        input_layout.setContentsMargins(18, 10, 18, 10)
+        input_layout.setSpacing(2)
 
         prompt_label = QLabel("請輸入您的員工號碼")
         prompt_label.setObjectName("heroInputHint")
@@ -49,7 +49,7 @@ class LoginWindow(QMainWindow):
         self.employee_id_input.returnPressed.connect(self.handle_enter)
 
         input_layout.addWidget(prompt_label)
-        input_layout.addWidget(self.employee_id_input, 1)
+        input_layout.addWidget(self.employee_id_input)
 
         self.enter_button = QPushButton("請點我開始工作")
         self.enter_button.setMinimumHeight(78)
@@ -126,3 +126,4 @@ class LoginWindow(QMainWindow):
         self.settings_window = SettingsWindow(parent_window=self, settings_service=self.settings_service, employee_service=self.employee_service)
         self.settings_window.show()
         self.hide()
+

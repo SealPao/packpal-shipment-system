@@ -21,6 +21,17 @@ def apply_window_icon(window: QWidget) -> None:
         window.setWindowIcon(QIcon(str(path)))
 
 
+def show_window_like(source: QWidget, target: QWidget) -> None:
+    target.setGeometry(source.geometry())
+    if source.isMaximized():
+        target.showMaximized()
+        return
+    if source.isFullScreen():
+        target.showFullScreen()
+        return
+    target.show()
+
+
 def build_footer() -> QLabel:
     footer = QLabel(FOOTER_TEXT)
     footer.setAlignment(Qt.AlignmentFlag.AlignCenter)

@@ -8,7 +8,7 @@ from services.camera_service import CameraOption, CameraService
 from services.draft_service import DraftService
 from services.employee_service import EmployeeRecord, EmployeeService
 from services.settings_service import SettingsService
-from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_footer, create_card, create_mode_button, create_split_header
+from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_footer, create_card, create_mode_button, create_split_header, show_window_like
 from ui.repair_receiving_window import RepairReceivingWindow
 from ui.return_receiving_window import ReturnReceivingWindow
 from ui.settings_window import SettingsWindow
@@ -155,3 +155,4 @@ class ModeSelectWindow(QMainWindow):
         if self.parent_login is not None:
             self.parent_login.show()
         self.hide()
+

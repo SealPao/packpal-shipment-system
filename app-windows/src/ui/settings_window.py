@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from services.employee_service import EmployeeRecord, EmployeeService
 from services.settings_service import AppSettings, SettingsService
-from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_footer, create_card, create_page_header
+from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_footer, create_card, create_page_header, show_window_like
 
 
 class SettingsWindow(QMainWindow):
@@ -249,3 +249,4 @@ class SettingsWindow(QMainWindow):
         if self.parent_window is not None:
             self.parent_window.show()
         self.hide()
+

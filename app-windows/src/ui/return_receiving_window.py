@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QApplication, QFrame, QHBoxLayout, QLabel, QLineEd
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from services.draft_service import DraftService
-from ui.common import ScreenContainer, app_stylesheet, apply_window_icon
+from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, show_window_like
 
 
 class ReturnReceivingWindow(QMainWindow):
@@ -116,3 +116,4 @@ class ReturnReceivingWindow(QMainWindow):
         if self.parent_mode_select is not None:
             self.parent_mode_select.show()
         self.hide()
+
