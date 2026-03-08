@@ -57,11 +57,11 @@ class LoginPage(QWidget):
 
         card, card_layout = create_card()
         self.card = card
-        self.card.setMaximumWidth(1360)
-        self.card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
-        card_layout.setSpacing(20)
+        self.card.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Maximum)
+        card_layout.setSpacing(24)
 
         input_shell = QFrame()
+        self.input_shell = input_shell
         input_shell.setObjectName("heroInputShell")
         input_shell.setFixedHeight(96)
         input_layout = QVBoxLayout(input_shell)
@@ -102,16 +102,17 @@ class LoginPage(QWidget):
 
         logo_wrap = QWidget()
         self.logo_wrap = logo_wrap
-        logo_wrap.setFixedHeight(320)
+        logo_wrap.setFixedHeight(420)
         logo_layout = QVBoxLayout(logo_wrap)
         logo_layout.setContentsMargins(0, 0, 0, 0)
         logo_layout.setSpacing(0)
         logo_layout.addStretch(1)
-        self.logo_label = build_logo_label(300)
+        self.logo_label = build_logo_label(420)
         logo_layout.addWidget(self.logo_label, alignment=Qt.AlignmentFlag.AlignCenter)
         logo_layout.addStretch(1)
 
         card_layout.addWidget(input_shell)
+        card_layout.addSpacing(12)
         card_layout.addWidget(self.enter_button)
         card_layout.addWidget(self.helper_label)
         card_layout.addWidget(settings_row)
@@ -134,14 +135,14 @@ class LoginPage(QWidget):
     def _apply_responsive_layout(self) -> None:
         height = max(self.height(), self.window.height(), 1)
         width = max(self.width(), self.window.width(), 1)
-        logo_wrap_height = max(240, min(320, int(height * 0.20)))
-        logo_height = max(230, min(320, int(height * 0.18)))
-        card_width = max(900, min(1360, width - 80))
-        input_height = 82 if height < 900 else 92 if height < 1200 else 100
+        logo_height = max(360, min(440, int(height * 0.30)))
+        logo_wrap_height = logo_height + 40
+        card_width = max(960, min(2200, width - 80))
+        input_height = 84 if height < 900 else 94 if height < 1200 else 104
 
         self.logo_wrap.setFixedHeight(logo_wrap_height)
         set_logo_height(self.logo_label, logo_height)
-        self.card.setMaximumWidth(card_width)
+        self.card.setFixedWidth(card_width)
         self.input_shell.setFixedHeight(input_height)
 
     def reset(self) -> None:
@@ -193,9 +194,6 @@ class ModeSelectPage(QWidget):
         container.layout.addWidget(create_split_header("選擇作業模式", "請直接選擇要進行的作業。"))
 
         card, card_layout = create_card()
-        self.card = card
-        self.card.setMaximumWidth(1360)
-        self.card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
         card_layout.setSpacing(20)
 
         self.operator_label = QLabel()
@@ -794,6 +792,10 @@ class AppWindow(QMainWindow):
 
     def selected_camera_name(self) -> str:
         return self.mode_page.selected_camera_name()
+
+
+
+
 
 
 
