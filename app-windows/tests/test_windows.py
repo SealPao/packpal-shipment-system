@@ -72,13 +72,13 @@ def test_login_window_uses_employee_lookup() -> None:
     buttons = [button.text() for button in window.findChildren(QPushButton)]
 
     assert window.windowTitle() == "出貨小幫手 - 進入作業"
+    assert len(edits) == 1
     assert edits[0].placeholderText() == "請輸入員工編號"
-    assert edits[1].isReadOnly()
     assert "系統設定" in buttons
     assert "進入作業" in buttons
 
     window.employee_id_input.setText("A001")
-    assert window.employee_name_input.text() == "王小明"
+    assert window.employee_name_label.text() == "王小明"
 
 
 def test_settings_window_renders_core_fields_and_employee_table() -> None:
@@ -90,6 +90,7 @@ def test_settings_window_renders_core_fields_and_employee_table() -> None:
     assert "NAS API 位址" in labels
     assert "本地儲存路徑" in labels
     assert "員工資料設定" in labels
+    assert "返回" in [button.text() for button in window.findChildren(QPushButton)]
     assert table is not None
     assert table.columnCount() == 2
 

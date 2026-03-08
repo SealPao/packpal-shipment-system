@@ -1,7 +1,6 @@
 ﻿from __future__ import annotations
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QFormLayout, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton, QVBoxLayout
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from services.employee_service import EmployeeRecord, EmployeeService
@@ -29,25 +28,35 @@ class LoginWindow(QMainWindow):
 
         card, card_layout = create_card()
 
-        form = QFormLayout()
-        form.setSpacing(12)
-        form.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
-
         self.employee_id_input = QLineEdit()
         self.employee_id_input.setPlaceholderText("請輸入員工編號")
         self.employee_id_input.textChanged.connect(self.handle_employee_id_changed)
 
-        self.employee_name_input = QLineEdit()
-        self.employee_name_input.setPlaceholderText("輸入員工編號後自動帶出名稱")
-        self.employee_name_input.setReadOnly(True)
+        self.employee_name_label = QLabel("員工名稱會在輸入正確編號後自動帶出")
+        self.employee_name_label.setObjectName("employeeStatus")
+        self.employee_name_label.setWordWrap(True)
 
         self.employee_status_label = QLabel("請先輸入員工編號；若沒有資料，請先到系統設定匯入員工檔。")
         self.employee_status_label.setObjectName("employeeStatus")
         self.employee_status_label.setWordWrap(True)
 
-        form.addRow("員工編號", self.employee_id_input)
-        form.addRow("員工名稱", self.employee_name_input)
-        form.addRow("說明", self.employee_status_label)
+        form_layout = QVBoxLayout()
+        form_layout.setSpacing(10)
+
+        employee_id_label = QLabel("員工編號")
+        employee_id_label.setObjectName("fieldLabel")
+        form_layout.addWidget(employee_id_label)
+        form_layout.addWidget(self.employee_id_input)
+
+        employee_name_title = QLabel("員工名稱")
+        employee_name_title.setObjectName("fieldLabel")
+        form_layout.addWidget(employee_name_title)
+        form_layout.addWidget(self.employee_name_label)
+
+        help_title = QLabel("說明")
+        help_title.setObjectName("fieldLabel")
+        form_layout.addWidget(help_title)
+        form_layout.addWidget(self.employee_status_label)
 
         action_row = QHBoxLayout()
         settings_button = QPushButton("系統設定")
@@ -61,7 +70,7 @@ class LoginWindow(QMainWindow):
         action_row.addStretch(1)
         action_row.addWidget(enter_button)
 
-        card_layout.addLayout(form)
+        card_layout.addLayout(form_layout)
         card_layout.addLayout(action_row)
 
         container.layout.addStretch(1)
@@ -78,14 +87,14 @@ class LoginWindow(QMainWindow):
         self.current_employee = employee
 
         if employee is None:
-            self.employee_name_input.clear()
+            self.employee_name_label.setText("員工名稱會在輸入正確編號後自動帶出")
             if employee_id:
                 self.employee_status_label.setText("查無此員工編號，請確認後再進入作業。")
             else:
                 self.employee_status_label.setText("請先輸入員工編號；若沒有資料，請先到系統設定匯入員工檔。")
             return
 
-        self.employee_name_input.setText(employee.name)
+        self.employee_name_label.setText(employee.name)
         self.employee_status_label.setText(f"已帶出員工：{employee.employee_id} / {employee.name}")
 
     def handle_enter(self) -> None:

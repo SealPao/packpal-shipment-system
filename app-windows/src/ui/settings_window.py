@@ -1,7 +1,7 @@
 ﻿from __future__ import annotations
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QFileDialog, QFormLayout, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton, QTableWidget, QTableWidgetItem
+from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from services.employee_service import EmployeeService
@@ -24,58 +24,58 @@ class SettingsWindow(QMainWindow):
         container = ScreenContainer()
         self.setCentralWidget(container)
 
+        top_bar = QHBoxLayout()
+        back_button = QPushButton("返回")
+        back_button.setObjectName("secondaryButton")
+        back_button.clicked.connect(self.go_back)
+        top_bar.addWidget(back_button)
+        top_bar.addStretch(1)
+
         settings_card, settings_layout = create_card()
-        settings_form = QFormLayout()
-        settings_form.setSpacing(12)
-        settings_form.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
+        settings_title = QLabel("連線與儲存")
+        settings_title.setObjectName("sectionTitle")
+        settings_layout.addWidget(settings_title)
+
+        settings_hint = QLabel("先設定 NAS API 與本地儲存位置。相機選擇仍保留在模式選擇頁，避免作業時跟 webcam 打架。")
+        settings_hint.setObjectName("settingsHint")
+        settings_hint.setWordWrap(True)
+        settings_layout.addWidget(settings_hint)
 
         self.nas_url_input = QLineEdit(settings.nas_url)
         self.nas_url_input.setPlaceholderText("例如：http://192.168.1.100:8000")
+        settings_layout.addWidget(self._build_field_block("NAS API 位址", self.nas_url_input))
 
         self.storage_path_input = QLineEdit(settings.local_storage_path)
         self.storage_path_input.setPlaceholderText("選擇本地暫存與草稿儲存位置")
-
         browse_button = QPushButton("選擇資料夾")
         browse_button.setObjectName("secondaryButton")
         browse_button.clicked.connect(self.choose_storage_path)
 
-        storage_row = QHBoxLayout()
-        storage_row.addWidget(self.storage_path_input, 1)
-        storage_row.addWidget(browse_button)
-
-        settings_form.addRow("NAS API 位址", self.nas_url_input)
-        settings_form.addRow("本地儲存路徑", storage_row)
-
-        settings_hint = QLabel("NAS、草稿暫存與員工檔都先在這裡設定。相機選擇保留在模式選擇頁，避免作業時跟 webcam 打架。")
-        settings_hint.setObjectName("settingsHint")
-        settings_hint.setWordWrap(True)
+        storage_input_row = QHBoxLayout()
+        storage_input_row.addWidget(self.storage_path_input, 1)
+        storage_input_row.addWidget(browse_button)
+        storage_widget = QWidget()
+        storage_widget.setLayout(storage_input_row)
+        settings_layout.addWidget(self._build_field_block("本地儲存路徑", storage_widget))
 
         save_row = QHBoxLayout()
         save_button = QPushButton("儲存設定")
         save_button.clicked.connect(self.save_settings)
-        back_button = QPushButton("返回")
-        back_button.setObjectName("secondaryButton")
-        back_button.clicked.connect(self.go_back)
         save_row.addWidget(save_button)
-        save_row.addWidget(back_button)
         save_row.addStretch(1)
-
-        settings_layout.addLayout(settings_form)
-        settings_layout.addWidget(settings_hint)
         settings_layout.addLayout(save_row)
 
         employee_card, employee_layout = create_card()
-
         employee_title = QLabel("員工資料設定")
         employee_title.setObjectName("sectionTitle")
         employee_layout.addWidget(employee_title)
 
-        employee_hint = QLabel("登入流程使用員工編號，系統會依員工檔自動帶出名稱。支援 CSV 匯入；可先下載範例檔再填寫。")
+        employee_hint = QLabel("登入只輸入員工編號，名稱會自動帶出。支援 CSV 匯入；可先下載範例檔再填寫。")
         employee_hint.setObjectName("settingsHint")
         employee_hint.setWordWrap(True)
         employee_layout.addWidget(employee_hint)
 
-        self.employee_file_label = QLabel(f"目前員工檔：{self.employee_service.employee_file_path()}")
+        self.employee_file_label = QLabel()
         self.employee_file_label.setObjectName("settingsHint")
         self.employee_file_label.setWordWrap(True)
         employee_layout.addWidget(self.employee_file_label)
@@ -84,10 +84,8 @@ class SettingsWindow(QMainWindow):
         download_button = QPushButton("下載範例檔")
         download_button.setObjectName("secondaryButton")
         download_button.clicked.connect(self.download_sample_file)
-
         import_button = QPushButton("匯入員工檔")
         import_button.clicked.connect(self.import_employee_file)
-
         employee_button_row.addWidget(download_button)
         employee_button_row.addWidget(import_button)
         employee_button_row.addStretch(1)
@@ -100,19 +98,33 @@ class SettingsWindow(QMainWindow):
         self.employee_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.employee_table.setAlternatingRowColors(True)
         self.employee_table.horizontalHeader().setStretchLastSection(True)
+        self.employee_table.setMinimumHeight(280)
         employee_layout.addWidget(self.employee_table)
 
         self.employee_count_label = QLabel()
         self.employee_count_label.setObjectName("settingsHint")
         employee_layout.addWidget(self.employee_count_label)
 
-        container.layout.addWidget(create_page_header("系統設定", "在這裡設定 NAS、本地儲存與員工資料匯入。"))
+        container.layout.addLayout(top_bar)
+        container.layout.addWidget(create_page_header("系統設定", "先修正基本設定與員工匯入，細緻版 UI 之後再整理。"))
         container.layout.addWidget(settings_card)
         container.layout.addWidget(employee_card)
         container.layout.addStretch(1)
         container.layout.addWidget(build_footer())
         self.setStyleSheet(app_stylesheet())
         self.refresh_employee_table()
+
+    def _build_field_block(self, label_text: str, field_widget: QWidget) -> QWidget:
+        block = QWidget()
+        layout = QVBoxLayout(block)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
+
+        label = QLabel(label_text)
+        label.setObjectName("fieldLabel")
+        layout.addWidget(label)
+        layout.addWidget(field_widget)
+        return block
 
     def choose_storage_path(self) -> None:
         directory = QFileDialog.getExistingDirectory(self, "選擇本地儲存資料夾", self.storage_path_input.text())
