@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QScrollArea,
+    QStyledItemDelegate,
     QStackedWidget,
     QTableWidget,
     QTableWidgetItem,
@@ -36,6 +37,12 @@ from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_
 class NoWheelComboBox(QComboBox):
     def wheelEvent(self, event) -> None:  # type: ignore[override]
         event.ignore()
+
+
+class CenteredTableDelegate(QStyledItemDelegate):
+    def initStyleOption(self, option, index) -> None:  # type: ignore[override]
+        super().initStyleOption(option, index)
+        option.displayAlignment = Qt.AlignmentFlag.AlignCenter
 
 
 class LoginPage(QWidget):
@@ -89,13 +96,22 @@ class LoginPage(QWidget):
         settings_button.clicked.connect(lambda _checked=False: self.window.show_settings("login"))
         settings_layout.addWidget(settings_button, alignment=Qt.AlignmentFlag.AlignLeft)
 
+        logo_wrap = QWidget()
+        logo_wrap.setFixedHeight(320)
+        logo_layout = QVBoxLayout(logo_wrap)
+        logo_layout.setContentsMargins(0, 0, 0, 0)
+        logo_layout.setSpacing(0)
+        logo_layout.addStretch(1)
+        logo_layout.addWidget(build_logo_label(260), alignment=Qt.AlignmentFlag.AlignCenter)
+        logo_layout.addStretch(1)
+
         card_layout.addWidget(input_shell)
         card_layout.addWidget(self.enter_button)
         card_layout.addWidget(self.helper_label)
         card_layout.addWidget(settings_row)
 
-        container.layout.addStretch(1)
-        container.layout.addWidget(build_logo_label(434))
+        container.layout.addSpacing(12)
+        container.layout.addWidget(logo_wrap)
         container.layout.addWidget(card)
         container.layout.addStretch(1)
         container.layout.addWidget(build_footer())
@@ -421,8 +437,10 @@ class SettingsPage(QWidget):
         self.employee_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.employee_table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
         self.employee_table.setAlternatingRowColors(True)
+        self.employee_table.setItemDelegate(CenteredTableDelegate(self.employee_table))
         self.employee_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.employee_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        self.employee_table.horizontalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
         self.employee_table.setMinimumHeight(260)
         employee_layout.addWidget(self.employee_table, 1)
 
@@ -745,18 +763,4 @@ class AppWindow(QMainWindow):
 
     def selected_camera_name(self) -> str:
         return self.mode_page.selected_camera_name()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
