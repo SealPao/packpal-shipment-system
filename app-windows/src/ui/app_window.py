@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QFrame,
     QFileDialog,
+    QGridLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -86,7 +87,7 @@ class LoginPage(QWidget):
         card_layout.addWidget(settings_row)
 
         container.layout.addStretch(1)
-        container.layout.addWidget(build_logo_label(220))
+        container.layout.addWidget(build_logo_label(434))
         container.layout.addWidget(card)
         container.layout.addStretch(1)
         container.layout.addWidget(build_footer())
@@ -236,6 +237,7 @@ class ModeSelectPage(QWidget):
                 return camera.name
         return "尚未選擇"
 
+
 class SettingsPage(QWidget):
     def __init__(self, window: "AppWindow") -> None:
         super().__init__()
@@ -269,21 +271,24 @@ class SettingsPage(QWidget):
         camera_title.setObjectName("sectionTitle")
         camera_layout.addWidget(camera_title)
 
-        camera_hint = QLabel("先在這裡確認預設攝影機；正式版會接入即時預覽畫面。")
+        camera_hint = QLabel("左側保留 4:3 攝影機預覽區，右側可先調整預設攝影機與縮放。")
         camera_hint.setObjectName("settingsHint")
         camera_hint.setWordWrap(True)
         camera_layout.addWidget(camera_hint)
 
+        camera_body = QHBoxLayout()
+        camera_body.setSpacing(16)
+
         self.camera_preview = QFrame()
         self.camera_preview.setObjectName("subCard")
-        self.camera_preview.setMinimumHeight(180)
+        self.camera_preview.setMinimumSize(560, 420)
         preview_layout = QVBoxLayout(self.camera_preview)
         preview_layout.setContentsMargins(20, 20, 20, 20)
         preview_layout.setSpacing(8)
-        preview_title = QLabel("預覽畫面保留區")
+        preview_title = QLabel("4:3 攝影機預覽區")
         preview_title.setObjectName("subSectionTitle")
         preview_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        preview_body = QLabel("正式版會在這裡顯示目前攝影機畫面。")
+        preview_body = QLabel("正式版會在這裡顯示目前攝影機畫面，供你先確認角度、距離與錄影範圍。")
         preview_body.setObjectName("settingsHint")
         preview_body.setAlignment(Qt.AlignmentFlag.AlignCenter)
         preview_body.setWordWrap(True)
@@ -291,22 +296,36 @@ class SettingsPage(QWidget):
         preview_layout.addWidget(preview_title)
         preview_layout.addWidget(preview_body)
         preview_layout.addStretch(1)
-        camera_layout.addWidget(self.camera_preview)
+        camera_body.addWidget(self.camera_preview, 3)
 
-        camera_row = QHBoxLayout()
-        camera_row.setSpacing(12)
-        camera_label = QLabel("預設攝影機")
-        camera_label.setObjectName("fieldLabel")
+        camera_options = QFrame()
+        camera_options.setObjectName("subCard")
+        options_layout = QVBoxLayout(camera_options)
+        options_layout.setContentsMargins(18, 18, 18, 18)
+        options_layout.setSpacing(12)
+
         self.camera_combo = QComboBox()
         self.camera_combo.setMinimumHeight(44)
         self.camera_combo.currentIndexChanged.connect(self.persist_selected_camera)
+        options_layout.addWidget(self._build_field_block("預設攝影機", self.camera_combo))
+
+        self.zoom_combo = QComboBox()
+        self.zoom_combo.addItems(["100%", "125%", "150%", "200%"])
+        self.zoom_combo.setMinimumHeight(44)
+        options_layout.addWidget(self._build_field_block("預覽縮放", self.zoom_combo))
+
         refresh_camera_button = QPushButton("重新整理相機")
         refresh_camera_button.setObjectName("secondaryButton")
         refresh_camera_button.clicked.connect(lambda _checked=False: self.refresh_camera_options())
-        camera_row.addWidget(camera_label)
-        camera_row.addWidget(self.camera_combo, 1)
-        camera_row.addWidget(refresh_camera_button)
-        camera_layout.addLayout(camera_row)
+        options_layout.addWidget(refresh_camera_button)
+
+        options_note = QLabel("後續可在這裡加入鏡像、裁切、zoom 與曝光等進階設定。")
+        options_note.setObjectName("settingsHint")
+        options_note.setWordWrap(True)
+        options_layout.addWidget(options_note)
+        options_layout.addStretch(1)
+        camera_body.addWidget(camera_options, 2)
+        camera_layout.addLayout(camera_body)
 
         settings_card, settings_layout = create_card()
         settings_title = QLabel("連線與儲存")
@@ -337,6 +356,7 @@ class SettingsPage(QWidget):
         save_row.addWidget(save_button)
         save_row.addStretch(1)
         settings_layout.addLayout(save_row)
+        settings_layout.addStretch(1)
 
         employee_card, employee_layout = create_card()
         employee_title = QLabel("員工資料設定")
@@ -353,7 +373,11 @@ class SettingsPage(QWidget):
         self.employee_file_label.setWordWrap(True)
         employee_layout.addWidget(self.employee_file_label)
 
-        employee_button_row = QHBoxLayout()
+        button_grid = QGridLayout()
+        button_grid.setHorizontalSpacing(12)
+        button_grid.setVerticalSpacing(12)
+        button_grid.setColumnStretch(0, 1)
+        button_grid.setColumnStretch(1, 1)
         add_row_button = QPushButton("新增一筆")
         add_row_button.setObjectName("secondaryButton")
         add_row_button.clicked.connect(lambda _checked=False: self.add_employee_row())
@@ -368,13 +392,12 @@ class SettingsPage(QWidget):
         import_button.clicked.connect(lambda _checked=False: self.import_employee_file())
         save_employee_button = QPushButton("儲存員工資料")
         save_employee_button.clicked.connect(lambda _checked=False: self.save_employee_table())
-        employee_button_row.addWidget(add_row_button)
-        employee_button_row.addWidget(delete_row_button)
-        employee_button_row.addWidget(download_button)
-        employee_button_row.addWidget(import_button)
-        employee_button_row.addWidget(save_employee_button)
-        employee_button_row.addStretch(1)
-        employee_layout.addLayout(employee_button_row)
+        button_grid.addWidget(add_row_button, 0, 0)
+        button_grid.addWidget(delete_row_button, 0, 1)
+        button_grid.addWidget(download_button, 1, 0)
+        button_grid.addWidget(import_button, 1, 1)
+        button_grid.addWidget(save_employee_button, 2, 0, 1, 2)
+        employee_layout.addLayout(button_grid)
 
         self.employee_table = QTableWidget(0, 2)
         self.employee_table.setHorizontalHeaderLabels(["員工編號", "員工名稱"])
@@ -384,7 +407,7 @@ class SettingsPage(QWidget):
         self.employee_table.setAlternatingRowColors(True)
         self.employee_table.horizontalHeader().setStretchLastSection(True)
         self.employee_table.setMinimumHeight(260)
-        employee_layout.addWidget(self.employee_table)
+        employee_layout.addWidget(self.employee_table, 1)
 
         self.employee_count_label = QLabel()
         self.employee_count_label.setObjectName("settingsHint")
@@ -691,6 +714,9 @@ class AppWindow(QMainWindow):
 
     def selected_camera_name(self) -> str:
         return self.mode_page.selected_camera_name()
+
+
+
 
 
 
