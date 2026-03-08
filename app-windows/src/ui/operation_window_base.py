@@ -2,7 +2,8 @@
 
 from typing import Iterable, Sequence
 
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QPushButton, QVBoxLayout, QWidget
+from PySide6.QtGui import QCloseEvent
+from PySide6.QtWidgets import QApplication, QFrame, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QPushButton, QVBoxLayout, QWidget
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from services.draft_service import DraftService
@@ -69,6 +70,12 @@ class OperationWindowBase(QMainWindow):
 
         self.load_latest_draft(show_empty_message=False)
         self.setStyleSheet(app_stylesheet(primary_color, hover_color))
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        app = QApplication.instance()
+        if app is not None:
+            app.quit()
+        event.accept()
 
     def _build_section_title(self, text: str) -> QLabel:
         label = QLabel(text)
@@ -182,4 +189,4 @@ class OperationWindowBase(QMainWindow):
     def go_back(self) -> None:
         if self.parent_mode_select is not None:
             self.parent_mode_select.show()
-        self.close()
+        self.hide()

@@ -1,7 +1,21 @@
 ﻿from __future__ import annotations
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
+from PySide6.QtGui import QCloseEvent
+from PySide6.QtWidgets import (
+    QApplication,
+    QFileDialog,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QMessageBox,
+    QPushButton,
+    QScrollArea,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from services.employee_service import EmployeeService
@@ -23,13 +37,27 @@ class SettingsWindow(QMainWindow):
 
         container = ScreenContainer()
         self.setCentralWidget(container)
+        container.layout.setSpacing(16)
 
         top_bar = QHBoxLayout()
+        top_bar.setContentsMargins(0, 0, 0, 0)
         back_button = QPushButton("返回")
         back_button.setObjectName("secondaryButton")
         back_button.clicked.connect(self.go_back)
         top_bar.addWidget(back_button)
         top_bar.addStretch(1)
+
+        container.layout.addLayout(top_bar)
+        container.layout.addWidget(create_page_header("系統設定", "先修正基本設定與員工匯入，細緻版 UI 之後再整理。", show_logo=False))
+
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setFrameShape(QScrollArea.Shape.NoFrame)
+
+        scroll_content = QWidget()
+        scroll_layout = QVBoxLayout(scroll_content)
+        scroll_layout.setContentsMargins(0, 0, 0, 0)
+        scroll_layout.setSpacing(16)
 
         settings_card, settings_layout = create_card()
         settings_title = QLabel("連線與儲存")
@@ -51,14 +79,17 @@ class SettingsWindow(QMainWindow):
         browse_button.setObjectName("secondaryButton")
         browse_button.clicked.connect(self.choose_storage_path)
 
-        storage_input_row = QHBoxLayout()
-        storage_input_row.addWidget(self.storage_path_input, 1)
-        storage_input_row.addWidget(browse_button)
         storage_widget = QWidget()
-        storage_widget.setLayout(storage_input_row)
+        storage_row = QHBoxLayout(storage_widget)
+        storage_row.setContentsMargins(0, 0, 0, 0)
+        storage_row.setSpacing(12)
+        storage_row.addWidget(self.storage_path_input, 1)
+        storage_row.addWidget(browse_button)
         settings_layout.addWidget(self._build_field_block("本地儲存路徑", storage_widget))
 
         save_row = QHBoxLayout()
+        save_row.setContentsMargins(0, 0, 0, 0)
+        save_row.setSpacing(12)
         save_button = QPushButton("儲存設定")
         save_button.clicked.connect(self.save_settings)
         save_row.addWidget(save_button)
@@ -81,6 +112,8 @@ class SettingsWindow(QMainWindow):
         employee_layout.addWidget(self.employee_file_label)
 
         employee_button_row = QHBoxLayout()
+        employee_button_row.setContentsMargins(0, 0, 0, 0)
+        employee_button_row.setSpacing(12)
         download_button = QPushButton("下載範例檔")
         download_button.setObjectName("secondaryButton")
         download_button.clicked.connect(self.download_sample_file)
@@ -98,21 +131,28 @@ class SettingsWindow(QMainWindow):
         self.employee_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.employee_table.setAlternatingRowColors(True)
         self.employee_table.horizontalHeader().setStretchLastSection(True)
-        self.employee_table.setMinimumHeight(280)
+        self.employee_table.setMinimumHeight(260)
         employee_layout.addWidget(self.employee_table)
 
         self.employee_count_label = QLabel()
         self.employee_count_label.setObjectName("settingsHint")
         employee_layout.addWidget(self.employee_count_label)
 
-        container.layout.addLayout(top_bar)
-        container.layout.addWidget(create_page_header("系統設定", "先修正基本設定與員工匯入，細緻版 UI 之後再整理。"))
-        container.layout.addWidget(settings_card)
-        container.layout.addWidget(employee_card)
-        container.layout.addStretch(1)
+        scroll_layout.addWidget(settings_card)
+        scroll_layout.addWidget(employee_card)
+        scroll_layout.addStretch(1)
+        scroll_area.setWidget(scroll_content)
+
+        container.layout.addWidget(scroll_area, 1)
         container.layout.addWidget(build_footer())
         self.setStyleSheet(app_stylesheet())
         self.refresh_employee_table()
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        app = QApplication.instance()
+        if app is not None:
+            app.quit()
+        event.accept()
 
     def _build_field_block(self, label_text: str, field_widget: QWidget) -> QWidget:
         block = QWidget()
@@ -172,4 +212,4 @@ class SettingsWindow(QMainWindow):
     def go_back(self) -> None:
         if self.parent_window is not None:
             self.parent_window.show()
-        self.close()
+        self.hide()

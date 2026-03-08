@@ -1,6 +1,7 @@
 ﻿from __future__ import annotations
 
-from PySide6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton, QVBoxLayout
+from PySide6.QtGui import QCloseEvent
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton, QVBoxLayout, QApplication
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from services.employee_service import EmployeeRecord, EmployeeService
@@ -80,6 +81,12 @@ class LoginWindow(QMainWindow):
         container.layout.addWidget(build_footer())
 
         self.setStyleSheet(app_stylesheet())
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        app = QApplication.instance()
+        if app is not None:
+            app.quit()
+        event.accept()
 
     def handle_employee_id_changed(self) -> None:
         employee_id = self.employee_id_input.text().strip()

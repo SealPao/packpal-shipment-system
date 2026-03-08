@@ -1,6 +1,7 @@
 ﻿from __future__ import annotations
 
-from PySide6.QtWidgets import QComboBox, QHBoxLayout, QLabel, QMainWindow, QPushButton, QWidget
+from PySide6.QtGui import QCloseEvent
+from PySide6.QtWidgets import QApplication, QComboBox, QHBoxLayout, QLabel, QMainWindow, QPushButton, QWidget
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from services.camera_service import CameraOption, CameraService
@@ -67,6 +68,12 @@ class ModeSelectWindow(QMainWindow):
 
         self.refresh_camera_options()
         self.setStyleSheet(app_stylesheet("#0f766e", "#0d5f59"))
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        app = QApplication.instance()
+        if app is not None:
+            app.quit()
+        event.accept()
 
     def _build_employee_status(self) -> QLabel:
         if self.current_employee is None:
@@ -152,4 +159,4 @@ class ModeSelectWindow(QMainWindow):
     def go_back(self) -> None:
         if self.parent_login is not None:
             self.parent_login.show()
-        self.close()
+        self.hide()
