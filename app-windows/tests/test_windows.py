@@ -76,12 +76,11 @@ def test_app_window_uses_single_stack_flow() -> None:
     window = build_window()
     edits = window.login_page.findChildren(QLineEdit)
     buttons = [button.text() for button in window.login_page.findChildren(QPushButton)]
-    labels = [label.text() for label in window.login_page.findChildren(QLabel)]
 
     assert window.windowTitle() == "出貨小幫手 - 進入作業"
     assert window.stack.currentWidget() is window.login_page
     assert len(edits) == 1
-    assert "請輸入您的員工號碼" in labels
+    assert window.login_page.employee_id_input.placeholderText() == "請輸入您的員工號碼"
     assert "系統設定" in buttons
     assert "請點我開始工作" in buttons
 
@@ -169,6 +168,4 @@ def test_database_initialization_creates_record_drafts_table() -> None:
     with connect(db_path) as connection:
         row = connection.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'record_drafts'").fetchone()
     assert row is not None
-
-
 

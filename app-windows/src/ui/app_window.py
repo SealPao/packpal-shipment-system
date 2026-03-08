@@ -61,20 +61,16 @@ class LoginPage(QWidget):
         input_shell = QFrame()
         input_shell.setObjectName("heroInputShell")
         input_layout = QVBoxLayout(input_shell)
-        input_layout.setContentsMargins(18, 10, 18, 10)
-        input_layout.setSpacing(2)
-
-        prompt_label = QLabel("請輸入您的員工號碼")
-        prompt_label.setObjectName("heroInputHint")
-        prompt_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        input_layout.setContentsMargins(18, 12, 18, 12)
+        input_layout.setSpacing(0)
 
         self.employee_id_input = QLineEdit()
         self.employee_id_input.setObjectName("heroInput")
         self.employee_id_input.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.employee_id_input.setPlaceholderText("請輸入您的員工號碼")
         self.employee_id_input.textChanged.connect(self.handle_employee_id_changed)
         self.employee_id_input.returnPressed.connect(self.handle_enter)
 
-        input_layout.addWidget(prompt_label)
         input_layout.addWidget(self.employee_id_input)
 
         self.enter_button = QPushButton("請點我開始工作")
@@ -97,12 +93,12 @@ class LoginPage(QWidget):
         settings_layout.addWidget(settings_button, alignment=Qt.AlignmentFlag.AlignLeft)
 
         logo_wrap = QWidget()
-        logo_wrap.setFixedHeight(320)
+        logo_wrap.setFixedHeight(420)
         logo_layout = QVBoxLayout(logo_wrap)
         logo_layout.setContentsMargins(0, 0, 0, 0)
         logo_layout.setSpacing(0)
         logo_layout.addStretch(1)
-        logo_layout.addWidget(build_logo_label(260), alignment=Qt.AlignmentFlag.AlignCenter)
+        logo_layout.addWidget(build_logo_label(364), alignment=Qt.AlignmentFlag.AlignCenter)
         logo_layout.addStretch(1)
 
         card_layout.addWidget(input_shell)

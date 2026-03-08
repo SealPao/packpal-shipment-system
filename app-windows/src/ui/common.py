@@ -198,11 +198,10 @@ def app_stylesheet(primary_color: str = "#2563eb", hover_color: str = "#1d4ed8")
         #card {{ background-color: white; border: 1px solid #dbe2ea; border-radius: 16px; }}
         #subCard {{ background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }}
         #heroInputShell {{ background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; }}
-        #heroInputHint {{ font-size: 14px; color: #94a3b8; padding-left: 18px; }}
         QLabel {{ color: #111827; }}
         QLineEdit, QComboBox {{ min-height: 38px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #ffffff; }}
         QLineEdit::placeholder {{ color: #94a3b8; }}
-        #heroInput {{ min-height: 72px; font-size: 34px; padding: 10px 16px; text-align: center; border: none; background: transparent; }}
+        #heroInput {{ min-height: 92px; font-size: 36px; padding: 10px 16px; color: #111827; border: none; background: transparent; }}
         QTableWidget {{ border: 1px solid #cbd5e1; border-radius: 10px; background-color: white; gridline-color: #e5e7eb; }}
         QHeaderView::section {{ background-color: #f8fafc; color: #0f172a; padding: 10px; border: none; border-bottom: 1px solid #e5e7eb; font-weight: 700; }}
         QPushButton {{ padding: 10px 18px; border: none; border-radius: 10px; background-color: {primary_color}; color: white; font-size: 15px; font-weight: 600; }}
