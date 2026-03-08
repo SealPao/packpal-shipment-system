@@ -86,7 +86,7 @@ class LoginPage(QWidget):
         card_layout.addWidget(settings_row)
 
         container.layout.addStretch(1)
-        container.layout.addWidget(create_page_header("出貨小幫手", "輸入員工號碼後，系統會自動帶出姓名。"))
+        container.layout.addWidget(build_logo_label(220))
         container.layout.addWidget(card)
         container.layout.addStretch(1)
         container.layout.addWidget(build_footer())
@@ -253,7 +253,7 @@ class SettingsPage(QWidget):
         top_bar.addWidget(back_button)
         top_bar.addStretch(1)
         container.layout.addLayout(top_bar)
-        container.layout.addWidget(create_page_header("系統設定", "可設定 NAS、本地儲存，並可直接增刪改員工資料。", show_logo=False))
+        container.layout.addWidget(create_page_header("系統設定", "可設定攝影機、NAS、本地儲存與員工資料。", show_logo=False))
 
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
@@ -263,6 +263,50 @@ class SettingsPage(QWidget):
         scroll_layout = QVBoxLayout(scroll_content)
         scroll_layout.setContentsMargins(0, 0, 0, 0)
         scroll_layout.setSpacing(16)
+
+        camera_card, camera_layout = create_card()
+        camera_title = QLabel("攝影機預覽與設定")
+        camera_title.setObjectName("sectionTitle")
+        camera_layout.addWidget(camera_title)
+
+        camera_hint = QLabel("先在這裡確認預設攝影機；正式版會接入即時預覽畫面。")
+        camera_hint.setObjectName("settingsHint")
+        camera_hint.setWordWrap(True)
+        camera_layout.addWidget(camera_hint)
+
+        self.camera_preview = QFrame()
+        self.camera_preview.setObjectName("subCard")
+        self.camera_preview.setMinimumHeight(180)
+        preview_layout = QVBoxLayout(self.camera_preview)
+        preview_layout.setContentsMargins(20, 20, 20, 20)
+        preview_layout.setSpacing(8)
+        preview_title = QLabel("預覽畫面保留區")
+        preview_title.setObjectName("subSectionTitle")
+        preview_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        preview_body = QLabel("正式版會在這裡顯示目前攝影機畫面。")
+        preview_body.setObjectName("settingsHint")
+        preview_body.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        preview_body.setWordWrap(True)
+        preview_layout.addStretch(1)
+        preview_layout.addWidget(preview_title)
+        preview_layout.addWidget(preview_body)
+        preview_layout.addStretch(1)
+        camera_layout.addWidget(self.camera_preview)
+
+        camera_row = QHBoxLayout()
+        camera_row.setSpacing(12)
+        camera_label = QLabel("預設攝影機")
+        camera_label.setObjectName("fieldLabel")
+        self.camera_combo = QComboBox()
+        self.camera_combo.setMinimumHeight(44)
+        self.camera_combo.currentIndexChanged.connect(self.persist_selected_camera)
+        refresh_camera_button = QPushButton("重新整理相機")
+        refresh_camera_button.setObjectName("secondaryButton")
+        refresh_camera_button.clicked.connect(lambda _checked=False: self.refresh_camera_options())
+        camera_row.addWidget(camera_label)
+        camera_row.addWidget(self.camera_combo, 1)
+        camera_row.addWidget(refresh_camera_button)
+        camera_layout.addLayout(camera_row)
 
         settings_card, settings_layout = create_card()
         settings_title = QLabel("連線與儲存")
@@ -346,8 +390,13 @@ class SettingsPage(QWidget):
         self.employee_count_label.setObjectName("settingsHint")
         employee_layout.addWidget(self.employee_count_label)
 
-        scroll_layout.addWidget(settings_card)
-        scroll_layout.addWidget(employee_card)
+        lower_row = QHBoxLayout()
+        lower_row.setSpacing(16)
+        lower_row.addWidget(settings_card, 1)
+        lower_row.addWidget(employee_card, 1)
+
+        scroll_layout.addWidget(camera_card)
+        scroll_layout.addLayout(lower_row)
         scroll_layout.addStretch(1)
         scroll_area.setWidget(scroll_content)
 
@@ -358,7 +407,34 @@ class SettingsPage(QWidget):
         settings = self.window.settings_service.load()
         self.nas_url_input.setText(settings.nas_url)
         self.storage_path_input.setText(settings.local_storage_path)
+        self.refresh_camera_options()
         self.refresh_employee_table()
+
+    def refresh_camera_options(self) -> None:
+        cameras = self.window.camera_service.list_cameras()
+        selected_camera = self.window.camera_service.get_selected_camera(cameras)
+        self.camera_combo.blockSignals(True)
+        self.camera_combo.clear()
+        if not cameras:
+            self.camera_combo.addItem("沒有偵測到相機", "")
+            self.camera_combo.setEnabled(False)
+        else:
+            self.camera_combo.setEnabled(True)
+            for camera in cameras:
+                self.camera_combo.addItem(camera.name, camera.id)
+            selected_index = 0
+            if selected_camera is not None:
+                for index, camera in enumerate(cameras):
+                    if camera.id == selected_camera.id:
+                        selected_index = index
+                        break
+            self.camera_combo.setCurrentIndex(selected_index)
+        self.camera_combo.blockSignals(False)
+
+    def persist_selected_camera(self) -> None:
+        camera_id = str(self.camera_combo.currentData())
+        if camera_id:
+            self.window.camera_service.save_selected_camera_id(camera_id)
 
     def _build_field_block(self, label_text: str, field_widget: QWidget) -> QWidget:
         block = QWidget()
@@ -406,6 +482,7 @@ class SettingsPage(QWidget):
         for row in rows:
             self.employee_table.removeRow(row)
         self.employee_count_label.setText(f"目前員工資料筆數：{self.employee_table.rowCount()}")
+
     def download_sample_file(self) -> None:
         target_path, _ = QFileDialog.getSaveFileName(self, "下載員工範例檔", "packpal-employees-sample.csv", "CSV 檔案 (*.csv)")
         if not target_path:
@@ -449,8 +526,6 @@ class SettingsPage(QWidget):
             self.employee_table.setItem(row_index, 1, QTableWidgetItem(record.name))
         self.employee_count_label.setText(f"目前員工資料筆數：{len(records)}")
         self.employee_file_label.setText(f"目前員工檔：{self.window.employee_service.employee_file_path()}")
-
-
 class WorkflowPage(QWidget):
     def __init__(self, window: "AppWindow", *, module_key: str, title: str, prompt: str, subtitle: str, scan_placeholder: str, primary_color: str, hover_color: str, gradient_start: str, gradient_end: str) -> None:
         super().__init__()
@@ -508,7 +583,7 @@ class WorkflowPage(QWidget):
         action_row.setSpacing(12)
         back_button = QPushButton("返回模式選擇")
         back_button.setObjectName("secondaryButton")
-        back_button.clicked.connect(lambda: self.window.show_mode())
+        back_button.clicked.connect(lambda _checked=False: self.window.show_mode())
         load_button = QPushButton("載入最近草稿")
         load_button.setObjectName("secondaryButton")
         load_button.clicked.connect(lambda _checked=False: self.load_latest_draft())
@@ -616,4 +691,6 @@ class AppWindow(QMainWindow):
 
     def selected_camera_name(self) -> str:
         return self.mode_page.selected_camera_name()
+
+
 

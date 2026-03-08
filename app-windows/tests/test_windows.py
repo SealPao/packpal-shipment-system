@@ -170,3 +170,4 @@ def test_database_initialization_creates_record_drafts_table() -> None:
         row = connection.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'record_drafts'").fetchone()
     assert row is not None
 
+
