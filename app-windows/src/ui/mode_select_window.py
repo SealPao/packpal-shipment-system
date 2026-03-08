@@ -17,7 +17,7 @@ from ui.shipment_window import ShipmentWindow
 
 class ModeSelectWindow(QMainWindow):
     def __init__(self, parent_login: QMainWindow | None = None, current_employee: EmployeeRecord | None = None, camera_service: CameraService | None = None, draft_service: DraftService | None = None) -> None:
-        super().__init__(parent_login)
+        super().__init__()
         self.parent_login = parent_login
         self.current_employee = current_employee
         self.child_window: QMainWindow | None = None
@@ -143,16 +143,15 @@ class ModeSelectWindow(QMainWindow):
 
     def open_settings(self) -> None:
         self.settings_window = SettingsWindow(parent_window=self, settings_service=self.settings_service, employee_service=self.employee_service)
-        self.settings_window.show()
+        show_window_like(self, self.settings_window)
         self.hide()
 
     def open_child_window(self, window: QMainWindow) -> None:
         self.child_window = window
-        self.child_window.show()
+        show_window_like(self, self.child_window)
         self.hide()
 
     def go_back(self) -> None:
         if self.parent_login is not None:
-            self.parent_login.show()
+            show_window_like(self, self.parent_login)
         self.hide()
-

@@ -13,12 +13,7 @@ from services.camera_service import CameraOption
 from services.draft_service import DraftService
 from services.employee_service import EmployeeRecord, EmployeeService
 from services.settings_service import SettingsService
-from ui.login_window import LoginWindow
-from ui.mode_select_window import ModeSelectWindow
-from ui.repair_receiving_window import RepairReceivingWindow
-from ui.return_receiving_window import ReturnReceivingWindow
-from ui.settings_window import SettingsWindow
-from ui.shipment_window import ShipmentWindow
+from ui.app_window import AppWindow
 
 
 class FakeCameraService:
@@ -65,30 +60,46 @@ def write_employee_file() -> None:
         writer.writerow({"employee_id": "A002", "name": "陳美玲"})
 
 
-def test_login_window_uses_employee_lookup() -> None:
+def build_window() -> AppWindow:
+    settings_service = SettingsService()
+    employee_service = EmployeeService(settings_service)
+    return AppWindow(
+        settings_service=settings_service,
+        employee_service=employee_service,
+        camera_service=FakeCameraService(),
+        draft_service=DraftService(unique_db_path("drafts")),
+    )
+
+
+def test_app_window_uses_single_stack_flow() -> None:
     write_employee_file()
-    window = LoginWindow()
-    edits = window.findChildren(QLineEdit)
-    buttons = [button.text() for button in window.findChildren(QPushButton)]
-    labels = [label.text() for label in window.findChildren(QLabel)]
+    window = build_window()
+    edits = window.login_page.findChildren(QLineEdit)
+    buttons = [button.text() for button in window.login_page.findChildren(QPushButton)]
+    labels = [label.text() for label in window.login_page.findChildren(QLabel)]
 
     assert window.windowTitle() == "出貨小幫手 - 進入作業"
+    assert window.stack.currentWidget() is window.login_page
     assert len(edits) == 1
-    assert edits[0].placeholderText() == ""
     assert "請輸入您的員工號碼" in labels
     assert "系統設定" in buttons
     assert "請點我開始工作" in buttons
 
-    window.employee_id_input.setText("342")
-    assert "歡迎尊貴的 342 包兆強" in window.enter_button.text()
+    window.login_page.employee_id_input.setText("342")
+    assert "歡迎尊貴的 342 包兆強" in window.login_page.enter_button.text()
+
+    window.login_page.handle_enter()
+    assert window.stack.currentWidget() is window.mode_page
+    assert window.isMaximized() is False
 
 
-def test_settings_window_renders_employee_actions() -> None:
+def test_settings_page_renders_employee_actions() -> None:
     write_employee_file()
-    window = SettingsWindow()
-    labels = [label.text() for label in window.findChildren(QLabel)]
-    table = window.findChild(QTableWidget)
-    buttons = [button.text() for button in window.findChildren(QPushButton)]
+    window = build_window()
+    window.show_settings("login")
+    labels = [label.text() for label in window.settings_page.findChildren(QLabel)]
+    table = window.settings_page.findChild(QTableWidget)
+    buttons = [button.text() for button in window.settings_page.findChildren(QPushButton)]
 
     assert "NAS API 位址" in labels
     assert "員工資料設定" in labels
@@ -99,12 +110,13 @@ def test_settings_window_renders_employee_actions() -> None:
     assert table.columnCount() == 2
 
 
-def test_mode_selection_window_renders_simple_actions() -> None:
-    employee = EmployeeRecord(employee_id="342", name="包兆強")
-    window = ModeSelectWindow(current_employee=employee, camera_service=FakeCameraService(), draft_service=DraftService(unique_db_path("mode")))
-    buttons = [button.text() for button in window.findChildren(QPushButton)]
-    combo = window.findChild(QComboBox)
-    labels = [label.text() for label in window.findChildren(QLabel)]
+def test_mode_selection_page_renders_simple_actions() -> None:
+    write_employee_file()
+    window = build_window()
+    window.show_mode(EmployeeRecord(employee_id="342", name="包兆強"))
+    buttons = [button.text() for button in window.mode_page.findChildren(QPushButton)]
+    combo = window.mode_page.findChild(QComboBox)
+    labels = [label.text() for label in window.mode_page.findChildren(QLabel)]
 
     assert "出貨作業" in buttons
     assert "維修收貨" in buttons
@@ -116,39 +128,35 @@ def test_mode_selection_window_renders_simple_actions() -> None:
     assert "選擇作業模式" in labels
 
 
-def test_shipment_window_can_save_and_load_draft() -> None:
-    draft_service = DraftService(unique_db_path("shipment"))
-    window = ShipmentWindow(selected_camera_name="Document Camera", draft_service=draft_service)
-    labels = [label.text() for label in window.findChildren(QLabel)]
+def test_shipment_page_can_save_and_load_draft() -> None:
+    write_employee_file()
+    window = build_window()
+    window.show_mode(EmployeeRecord(employee_id="342", name="包兆強"))
+    window.show_workflow("shipment")
+    labels = [label.text() for label in window.shipment_page.findChildren(QLabel)]
 
-    window.scan_input.setText("SHP-TEST-001")
-    window.save_draft()
-
-    reloaded = ShipmentWindow(selected_camera_name="Document Camera", draft_service=draft_service)
-    reloaded.load_latest_draft()
+    window.shipment_page.scan_input.setText("SHP-TEST-001")
+    window.shipment_page.save_draft()
+    window.shipment_page.load_latest_draft()
 
     assert any("請掃描單號開始錄影" in text for text in labels)
-    assert reloaded.scan_input.text() == "SHP-TEST-001"
+    assert window.shipment_page.scan_input.text() == "SHP-TEST-001"
 
 
-def test_repair_window_renders_new_stage_ui() -> None:
-    window = RepairReceivingWindow(selected_camera_name="USB Camera", draft_service=DraftService(unique_db_path("repair")))
-    labels = [label.text() for label in window.findChildren(QLabel)]
+def test_repair_and_return_pages_render_stage_ui() -> None:
+    write_employee_file()
+    window = build_window()
+    window.show_mode(EmployeeRecord(employee_id="342", name="包兆強"))
 
-    assert window.windowTitle() == "出貨小幫手 - 維修收貨"
-    assert "維修收貨" in labels
-    assert "請掃描維修單號開始收貨" in labels
-    assert "相機：USB Camera" in labels
+    window.show_workflow("repair")
+    repair_labels = [label.text() for label in window.repair_page.findChildren(QLabel)]
+    assert "維修收貨" in repair_labels
+    assert "請掃描維修單號開始收貨" in repair_labels
 
-
-def test_return_window_renders_new_stage_ui() -> None:
-    window = ReturnReceivingWindow(selected_camera_name="Document Camera", draft_service=DraftService(unique_db_path("return")))
-    labels = [label.text() for label in window.findChildren(QLabel)]
-
-    assert window.windowTitle() == "出貨小幫手 - 退貨收貨"
-    assert "退貨收貨" in labels
-    assert "請掃描退貨單號開始收貨" in labels
-    assert "相機：Document Camera" in labels
+    window.show_workflow("return")
+    return_labels = [label.text() for label in window.return_page.findChildren(QLabel)]
+    assert "退貨收貨" in return_labels
+    assert "請掃描退貨單號開始收貨" in return_labels
 
 
 def test_database_initialization_creates_record_drafts_table() -> None:

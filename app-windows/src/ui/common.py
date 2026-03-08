@@ -22,13 +22,15 @@ def apply_window_icon(window: QWidget) -> None:
 
 
 def show_window_like(source: QWidget, target: QWidget) -> None:
-    target.setGeometry(source.geometry())
-    if source.isMaximized():
-        target.showMaximized()
-        return
     if source.isFullScreen():
         target.showFullScreen()
         return
+    if source.isMaximized():
+        target.showMaximized()
+        return
+    target.showNormal()
+    target.move(source.pos())
+    target.resize(source.size())
     target.show()
 
 

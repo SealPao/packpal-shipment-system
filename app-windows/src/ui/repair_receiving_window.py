@@ -11,7 +11,7 @@ from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, show_w
 
 class RepairReceivingWindow(QMainWindow):
     def __init__(self, parent_mode_select=None, selected_camera_name: str | None = None, draft_service: DraftService | None = None) -> None:
-        super().__init__(parent_mode_select)
+        super().__init__()
         self.parent_mode_select = parent_mode_select
         self.selected_camera_name = selected_camera_name or "尚未選擇"
         self.draft_service = draft_service or DraftService()
@@ -114,6 +114,5 @@ class RepairReceivingWindow(QMainWindow):
 
     def go_back(self) -> None:
         if self.parent_mode_select is not None:
-            self.parent_mode_select.show()
+            show_window_like(self, self.parent_mode_select)
         self.hide()
-

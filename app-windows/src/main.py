@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import sys
 
@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QApplication
 
 from app.config import APP_NAME, APP_ORG_DOMAIN, APP_ORG_NAME
 from db.session import initialize_database
-from ui.login_window import LoginWindow
+from ui.app_window import AppWindow
 
 
 def main() -> int:
@@ -19,7 +19,7 @@ def main() -> int:
 
     initialize_database()
 
-    window = LoginWindow()
+    window = AppWindow()
     window.show()
 
     return app.exec()

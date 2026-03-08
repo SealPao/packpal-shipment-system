@@ -31,7 +31,7 @@ class SettingsWindow(QMainWindow):
         settings_service: SettingsService | None = None,
         employee_service: EmployeeService | None = None,
     ) -> None:
-        super().__init__(parent_window)
+        super().__init__()
         self.parent_window = parent_window
         self.settings_service = settings_service or SettingsService()
         self.employee_service = employee_service or EmployeeService(self.settings_service)
@@ -247,6 +247,5 @@ class SettingsWindow(QMainWindow):
 
     def go_back(self) -> None:
         if self.parent_window is not None:
-            self.parent_window.show()
+            show_window_like(self, self.parent_window)
         self.hide()
-
