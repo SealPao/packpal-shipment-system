@@ -32,7 +32,6 @@ class ScreenContainer(QWidget):
     def __init__(self) -> None:
         super().__init__()
         self.setObjectName("screenContainer")
-
         self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(32, 32, 32, 24)
         self.layout.setSpacing(20)
@@ -84,85 +83,22 @@ def create_back_row(button_text: str = "返回模式選擇") -> tuple[QWidget, Q
 
 def app_stylesheet(primary_color: str = "#2563eb", hover_color: str = "#1d4ed8") -> str:
     return f"""
-        QMainWindow {{
-            background-color: #f5f7fb;
-        }}
-        #screenContainer {{
-            background-color: #f5f7fb;
-        }}
-        #pageTitle {{
-            font-size: 28px;
-            font-weight: 700;
-            color: #1f2937;
-        }}
-        #pageSubtitle {{
-            font-size: 15px;
-            color: #4b5563;
-        }}
-        #sectionTitle {{
-            font-size: 18px;
-            font-weight: 700;
-            color: #1f2937;
-        }}
-        #sectionBody {{
-            font-size: 14px;
-            color: #4b5563;
-            line-height: 1.6;
-        }}
-        #subSectionTitle {{
-            font-size: 15px;
-            font-weight: 700;
-            color: #111827;
-        }}
-        #fieldLabel {{
-            font-size: 13px;
-            color: #374151;
-        }}
-        #cameraStatus, #draftStatus {{
-            font-size: 13px;
-            color: #334155;
-        }}
-        #card {{
-            background-color: white;
-            border: 1px solid #dbe2ea;
-            border-radius: 16px;
-        }}
-        #subCard {{
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-        }}
-        QLabel {{
-            color: #111827;
-        }}
-        QLineEdit, QComboBox {{
-            min-height: 38px;
-            padding: 6px 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            background-color: #ffffff;
-        }}
-        QPushButton {{
-            padding: 10px 18px;
-            border: none;
-            border-radius: 10px;
-            background-color: {primary_color};
-            color: white;
-            font-size: 15px;
-            font-weight: 600;
-        }}
-        QPushButton:hover {{
-            background-color: {hover_color};
-        }}
-        #secondaryButton {{
-            background-color: #e5e7eb;
-            color: #111827;
-        }}
-        #secondaryButton:hover {{
-            background-color: #d1d5db;
-        }}
-        #footerLabel {{
-            font-size: 12px;
-            color: #6b7280;
-        }}
+        QMainWindow {{ background-color: #f5f7fb; }}
+        #screenContainer {{ background-color: #f5f7fb; }}
+        #pageTitle {{ font-size: 28px; font-weight: 700; color: #1f2937; }}
+        #pageSubtitle {{ font-size: 15px; color: #4b5563; }}
+        #sectionTitle {{ font-size: 18px; font-weight: 700; color: #1f2937; }}
+        #sectionBody {{ font-size: 14px; color: #4b5563; line-height: 1.6; }}
+        #subSectionTitle {{ font-size: 15px; font-weight: 700; color: #111827; }}
+        #fieldLabel {{ font-size: 13px; color: #374151; }}
+        #cameraStatus, #draftStatus, #settingsHint {{ font-size: 13px; color: #334155; }}
+        #card {{ background-color: white; border: 1px solid #dbe2ea; border-radius: 16px; }}
+        #subCard {{ background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }}
+        QLabel {{ color: #111827; }}
+        QLineEdit, QComboBox {{ min-height: 38px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #ffffff; }}
+        QPushButton {{ padding: 10px 18px; border: none; border-radius: 10px; background-color: {primary_color}; color: white; font-size: 15px; font-weight: 600; }}
+        QPushButton:hover {{ background-color: {hover_color}; }}
+        #secondaryButton {{ background-color: #e5e7eb; color: #111827; }}
+        #secondaryButton:hover {{ background-color: #d1d5db; }}
+        #footerLabel {{ font-size: 12px; color: #6b7280; }}
     """

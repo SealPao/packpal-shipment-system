@@ -1,1 +1,1 @@
-"""Service layer helpers for camera selection and draft persistence."""
+"""Service layer helpers for camera selection, settings, and draft persistence."""
