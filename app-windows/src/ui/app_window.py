@@ -30,7 +30,7 @@ from services.camera_service import CameraOption, CameraService
 from services.draft_service import DraftService
 from services.employee_service import EmployeeRecord, EmployeeService
 from services.settings_service import AppSettings, SettingsService
-from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_footer, build_logo_label, create_card, create_mode_button, create_page_header, create_split_header
+from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_footer, build_logo_label, create_card, create_mode_button, create_page_header, create_split_header, set_logo_height
 
 
 
@@ -56,6 +56,9 @@ class LoginPage(QWidget):
         root.addWidget(container)
 
         card, card_layout = create_card()
+        self.card = card
+        self.card.setMaximumWidth(1360)
+        self.card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
         card_layout.setSpacing(20)
 
         input_shell = QFrame()
@@ -98,12 +101,14 @@ class LoginPage(QWidget):
         settings_layout.addWidget(settings_button, alignment=Qt.AlignmentFlag.AlignLeft)
 
         logo_wrap = QWidget()
-        logo_wrap.setFixedHeight(420)
+        self.logo_wrap = logo_wrap
+        logo_wrap.setFixedHeight(320)
         logo_layout = QVBoxLayout(logo_wrap)
         logo_layout.setContentsMargins(0, 0, 0, 0)
         logo_layout.setSpacing(0)
         logo_layout.addStretch(1)
-        logo_layout.addWidget(build_logo_label(364), alignment=Qt.AlignmentFlag.AlignCenter)
+        self.logo_label = build_logo_label(300)
+        logo_layout.addWidget(self.logo_label, alignment=Qt.AlignmentFlag.AlignCenter)
         logo_layout.addStretch(1)
 
         card_layout.addWidget(input_shell)
@@ -112,10 +117,32 @@ class LoginPage(QWidget):
         card_layout.addWidget(settings_row)
 
         container.layout.addSpacing(12)
-        container.layout.addWidget(logo_wrap)
-        container.layout.addWidget(card)
+        container.layout.addWidget(logo_wrap, 0, Qt.AlignmentFlag.AlignHCenter)
+        container.layout.addWidget(card, 0, Qt.AlignmentFlag.AlignHCenter)
         container.layout.addStretch(1)
         container.layout.addWidget(build_footer())
+        QTimer.singleShot(0, self._apply_responsive_layout)
+
+    def showEvent(self, event) -> None:  # type: ignore[override]
+        super().showEvent(event)
+        QTimer.singleShot(0, self._apply_responsive_layout)
+
+    def resizeEvent(self, event) -> None:  # type: ignore[override]
+        super().resizeEvent(event)
+        self._apply_responsive_layout()
+
+    def _apply_responsive_layout(self) -> None:
+        height = max(self.height(), self.window.height(), 1)
+        width = max(self.width(), self.window.width(), 1)
+        logo_wrap_height = max(240, min(320, int(height * 0.20)))
+        logo_height = max(230, min(320, int(height * 0.18)))
+        card_width = max(900, min(1360, width - 80))
+        input_height = 82 if height < 900 else 92 if height < 1200 else 100
+
+        self.logo_wrap.setFixedHeight(logo_wrap_height)
+        set_logo_height(self.logo_label, logo_height)
+        self.card.setMaximumWidth(card_width)
+        self.input_shell.setFixedHeight(input_height)
 
     def reset(self) -> None:
         self.employee_id_input.setFocus()
@@ -166,6 +193,9 @@ class ModeSelectPage(QWidget):
         container.layout.addWidget(create_split_header("選擇作業模式", "請直接選擇要進行的作業。"))
 
         card, card_layout = create_card()
+        self.card = card
+        self.card.setMaximumWidth(1360)
+        self.card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
         card_layout.setSpacing(20)
 
         self.operator_label = QLabel()
@@ -764,6 +794,8 @@ class AppWindow(QMainWindow):
 
     def selected_camera_name(self) -> str:
         return self.mode_page.selected_camera_name()
+
+
 
 
 

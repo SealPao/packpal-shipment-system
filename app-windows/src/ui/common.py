@@ -67,10 +67,7 @@ def _trim_transparent_edges(pixmap: QPixmap) -> QPixmap:
     return pixmap.copy(rect)
 
 
-def build_logo_label(max_height: int = 140) -> QLabel:
-    logo = QLabel()
-    logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    logo.setObjectName("logoLabel")
+def set_logo_height(logo: QLabel, max_height: int) -> None:
     logo.setMinimumHeight(max_height)
     logo.setMaximumHeight(max_height)
     path = logo_path()
@@ -83,6 +80,13 @@ def build_logo_label(max_height: int = 140) -> QLabel:
             Qt.TransformationMode.SmoothTransformation,
         )
         logo.setPixmap(scaled)
+
+
+def build_logo_label(max_height: int = 140) -> QLabel:
+    logo = QLabel()
+    logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    logo.setObjectName("logoLabel")
+    set_logo_height(logo, max_height)
     return logo
 
 
@@ -213,6 +217,7 @@ def app_stylesheet(primary_color: str = "#2563eb", hover_color: str = "#1d4ed8")
         #modeButton:hover {{ background-color: #ecfeff; border: 1px solid #14b8a6; color: #0f172a; }}
         #footerLabel {{ font-size: 12px; color: #6b7280; }}
     """
+
 
 
 
