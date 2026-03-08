@@ -26,7 +26,7 @@ from services.camera_service import CameraOption, CameraService
 from services.draft_service import DraftService
 from services.employee_service import EmployeeRecord, EmployeeService
 from services.settings_service import AppSettings, SettingsService
-from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_footer, create_card, create_mode_button, create_page_header, create_split_header
+from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_footer, build_logo_label, create_card, create_mode_button, create_page_header, create_split_header
 
 
 class LoginPage(QWidget):
@@ -77,7 +77,7 @@ class LoginPage(QWidget):
         settings_layout.setSpacing(0)
         settings_button = QPushButton("系統設定")
         settings_button.setObjectName("secondaryButton")
-        settings_button.clicked.connect(lambda: self.window.show_settings("login"))
+        settings_button.clicked.connect(lambda _checked=False: self.window.show_settings("login"))
         settings_layout.addWidget(settings_button, alignment=Qt.AlignmentFlag.AlignLeft)
 
         card_layout.addWidget(input_shell)
@@ -149,11 +149,11 @@ class ModeSelectPage(QWidget):
         mode_row = QHBoxLayout()
         mode_row.setSpacing(20)
         shipment_button = create_mode_button("出貨作業")
-        shipment_button.clicked.connect(lambda: self.window.show_workflow("shipment"))
+        shipment_button.clicked.connect(lambda _checked=False: self.window.show_workflow("shipment"))
         repair_button = create_mode_button("維修收貨")
-        repair_button.clicked.connect(lambda: self.window.show_workflow("repair"))
+        repair_button.clicked.connect(lambda _checked=False: self.window.show_workflow("repair"))
         return_button = create_mode_button("退貨收貨")
-        return_button.clicked.connect(lambda: self.window.show_workflow("return"))
+        return_button.clicked.connect(lambda _checked=False: self.window.show_workflow("return"))
         mode_row.addWidget(shipment_button, 1)
         mode_row.addWidget(repair_button, 1)
         mode_row.addWidget(return_button, 1)
@@ -165,10 +165,10 @@ class ModeSelectPage(QWidget):
         left_actions.setSpacing(12)
         settings_button = QPushButton("系統設定")
         settings_button.setObjectName("secondaryButton")
-        settings_button.clicked.connect(lambda: self.window.show_settings("mode"))
+        settings_button.clicked.connect(lambda _checked=False: self.window.show_settings("mode"))
         back_button = QPushButton("返回登入")
         back_button.setObjectName("secondaryButton")
-        back_button.clicked.connect(self.window.show_login)
+        back_button.clicked.connect(lambda _checked=False: self.window.show_login())
         left_actions.addWidget(settings_button)
         left_actions.addWidget(back_button)
         left_actions_widget = QWidget()
@@ -249,7 +249,7 @@ class SettingsPage(QWidget):
         top_bar = QHBoxLayout()
         back_button = QPushButton("返回")
         back_button.setObjectName("secondaryButton")
-        back_button.clicked.connect(self.handle_back)
+        back_button.clicked.connect(lambda _checked=False: self.handle_back())
         top_bar.addWidget(back_button)
         top_bar.addStretch(1)
         container.layout.addLayout(top_bar)
@@ -277,7 +277,7 @@ class SettingsPage(QWidget):
         self.storage_path_input.setPlaceholderText("選擇本地暫存與草稿儲存位置")
         browse_button = QPushButton("選擇資料夾")
         browse_button.setObjectName("secondaryButton")
-        browse_button.clicked.connect(self.choose_storage_path)
+        browse_button.clicked.connect(lambda _checked=False: self.choose_storage_path())
 
         storage_widget = QWidget()
         storage_row = QHBoxLayout(storage_widget)
@@ -289,7 +289,7 @@ class SettingsPage(QWidget):
 
         save_row = QHBoxLayout()
         save_button = QPushButton("儲存連線設定")
-        save_button.clicked.connect(self.save_settings)
+        save_button.clicked.connect(lambda _checked=False: self.save_settings())
         save_row.addWidget(save_button)
         save_row.addStretch(1)
         settings_layout.addLayout(save_row)
@@ -312,18 +312,18 @@ class SettingsPage(QWidget):
         employee_button_row = QHBoxLayout()
         add_row_button = QPushButton("新增一筆")
         add_row_button.setObjectName("secondaryButton")
-        add_row_button.clicked.connect(self.add_employee_row)
+        add_row_button.clicked.connect(lambda _checked=False: self.add_employee_row())
         delete_row_button = QPushButton("刪除選取")
         delete_row_button.setObjectName("secondaryButton")
-        delete_row_button.clicked.connect(self.delete_selected_rows)
+        delete_row_button.clicked.connect(lambda _checked=False: self.delete_selected_rows())
         download_button = QPushButton("下載範例檔")
         download_button.setObjectName("secondaryButton")
-        download_button.clicked.connect(self.download_sample_file)
+        download_button.clicked.connect(lambda _checked=False: self.download_sample_file())
         import_button = QPushButton("匯入員工檔")
         import_button.setObjectName("secondaryButton")
-        import_button.clicked.connect(self.import_employee_file)
+        import_button.clicked.connect(lambda _checked=False: self.import_employee_file())
         save_employee_button = QPushButton("儲存員工資料")
-        save_employee_button.clicked.connect(self.save_employee_table)
+        save_employee_button.clicked.connect(lambda _checked=False: self.save_employee_table())
         employee_button_row.addWidget(add_row_button)
         employee_button_row.addWidget(delete_row_button)
         employee_button_row.addWidget(download_button)
@@ -508,12 +508,12 @@ class WorkflowPage(QWidget):
         action_row.setSpacing(12)
         back_button = QPushButton("返回模式選擇")
         back_button.setObjectName("secondaryButton")
-        back_button.clicked.connect(self.window.show_mode)
+        back_button.clicked.connect(lambda: self.window.show_mode())
         load_button = QPushButton("載入最近草稿")
         load_button.setObjectName("secondaryButton")
-        load_button.clicked.connect(self.load_latest_draft)
+        load_button.clicked.connect(lambda _checked=False: self.load_latest_draft())
         save_button = QPushButton("儲存草稿")
-        save_button.clicked.connect(self.save_draft)
+        save_button.clicked.connect(lambda _checked=False: self.save_draft())
         self.draft_status_label = QLabel("尚未儲存草稿")
         self.draft_status_label.setStyleSheet("color: white; font-size: 14px;")
         action_row.addWidget(back_button)
@@ -616,3 +616,4 @@ class AppWindow(QMainWindow):
 
     def selected_camera_name(self) -> str:
         return self.mode_page.selected_camera_name()
+

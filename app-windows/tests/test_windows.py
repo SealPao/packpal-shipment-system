@@ -139,8 +139,12 @@ def test_shipment_page_can_save_and_load_draft() -> None:
     window.shipment_page.save_draft()
     window.shipment_page.load_latest_draft()
 
+    back_button = next(button for button in window.shipment_page.findChildren(QPushButton) if button.text() == "返回模式選擇")
+    back_button.click()
+
     assert any("請掃描單號開始錄影" in text for text in labels)
     assert window.shipment_page.scan_input.text() == "SHP-TEST-001"
+    assert window.stack.currentWidget() is window.mode_page
 
 
 def test_repair_and_return_pages_render_stage_ui() -> None:
@@ -165,3 +169,4 @@ def test_database_initialization_creates_record_drafts_table() -> None:
     with connect(db_path) as connection:
         row = connection.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'record_drafts'").fetchone()
     assert row is not None
+
