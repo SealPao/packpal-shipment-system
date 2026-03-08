@@ -53,6 +53,11 @@ class OperationWindowBase(QMainWindow):
         card_layout.addWidget(self._build_camera_status())
         card_layout.addWidget(self._build_draft_toolbar())
 
+        status_hint = QLabel("目前為骨架版，僅提供欄位整理與草稿保存；正式出貨/收貨流程尚未實作完成。")
+        status_hint.setObjectName("settingsHint")
+        status_hint.setWordWrap(True)
+        card_layout.addWidget(status_hint)
+
         for section_title_text, field_keys in form_sections:
             card_layout.addWidget(self._build_form_section(section_title_text, field_keys))
 

@@ -36,6 +36,22 @@ class EmployeeService:
                     records.append(EmployeeRecord(employee_id=employee_id, name=name))
         return records
 
+    def save_records(self, records: list[EmployeeRecord]) -> int:
+        cleaned: list[dict[str, str]] = []
+        for record in records:
+            employee_id = record.employee_id.strip()
+            name = record.name.strip()
+            if employee_id and name:
+                cleaned.append({"employee_id": employee_id, "name": name})
+
+        target = self.employee_file_path()
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with target.open("w", encoding="utf-8-sig", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=["employee_id", "name"])
+            writer.writeheader()
+            writer.writerows(cleaned)
+        return len(cleaned)
+
     def find_by_id(self, employee_id: str) -> EmployeeRecord | None:
         normalized = employee_id.strip()
         if not normalized:
@@ -48,16 +64,7 @@ class EmployeeService:
     def import_csv(self, source_path: str | Path) -> int:
         source = Path(source_path)
         rows = self._read_rows(source)
-        target = self.employee_file_path()
-        target.parent.mkdir(parents=True, exist_ok=True)
-
-        with target.open("w", encoding="utf-8-sig", newline="") as handle:
-            writer = csv.DictWriter(handle, fieldnames=["employee_id", "name"])
-            writer.writeheader()
-            for row in rows:
-                writer.writerow(row)
-
-        return len(rows)
+        return self.save_records([EmployeeRecord(**row) for row in rows])
 
     def export_sample_csv(self, target_path: str | Path) -> None:
         target = Path(target_path)

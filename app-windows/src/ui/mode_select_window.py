@@ -1,7 +1,7 @@
 ﻿from __future__ import annotations
 
 from PySide6.QtGui import QCloseEvent
-from PySide6.QtWidgets import QApplication, QComboBox, QHBoxLayout, QLabel, QMainWindow, QPushButton, QWidget
+from PySide6.QtWidgets import QApplication, QComboBox, QGridLayout, QHBoxLayout, QLabel, QMainWindow, QPushButton, QWidget
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from services.camera_service import CameraOption, CameraService
@@ -35,34 +35,53 @@ class ModeSelectWindow(QMainWindow):
         container = ScreenContainer()
         self.setCentralWidget(container)
 
-        card, card_layout = create_card()
-        card_layout.addWidget(self._build_employee_status())
-        card_layout.addWidget(self._build_camera_section())
+        status_card, status_layout = create_card()
+        status_layout.addWidget(self._build_employee_status())
+        status_layout.addWidget(self._build_camera_section())
 
-        shipment_button = create_mode_button("出貨作業")
-        repair_button = create_mode_button("維修收貨")
-        return_button = create_mode_button("退貨收貨")
-        settings_button = QPushButton("系統設定")
-        settings_button.setObjectName("secondaryButton")
-        back_button = QPushButton("返回登入")
-        back_button.setObjectName("secondaryButton")
+        mode_card, mode_layout = create_card()
+        mode_title = QLabel("請選擇作業模式")
+        mode_title.setObjectName("sectionTitle")
+        mode_layout.addWidget(mode_title)
 
+        mode_hint = QLabel("目前三個作業頁都還是骨架版，已可切換與存草稿，但正式業務流程尚未完成。")
+        mode_hint.setObjectName("settingsHint")
+        mode_hint.setWordWrap(True)
+        mode_layout.addWidget(mode_hint)
+
+        mode_grid = QGridLayout()
+        mode_grid.setContentsMargins(0, 0, 0, 0)
+        mode_grid.setHorizontalSpacing(14)
+        mode_grid.setVerticalSpacing(14)
+
+        shipment_button = create_mode_button("出貨作業\n整理出貨資料與草稿")
+        repair_button = create_mode_button("維修收貨\n建立維修收貨草稿")
+        return_button = create_mode_button("退貨收貨\n建立退貨收貨草稿")
         shipment_button.clicked.connect(lambda: self.open_child_window(ShipmentWindow(self, self.selected_camera_name(), self.draft_service)))
         repair_button.clicked.connect(lambda: self.open_child_window(RepairReceivingWindow(self, self.selected_camera_name(), self.draft_service)))
         return_button.clicked.connect(lambda: self.open_child_window(ReturnReceivingWindow(self, self.selected_camera_name(), self.draft_service)))
-        settings_button.clicked.connect(self.open_settings)
-        back_button.clicked.connect(self.go_back)
 
-        card_layout.addWidget(shipment_button)
-        card_layout.addWidget(repair_button)
-        card_layout.addWidget(return_button)
-        card_layout.addWidget(settings_button)
-        card_layout.addSpacing(8)
-        card_layout.addWidget(back_button)
+        mode_grid.addWidget(shipment_button, 0, 0)
+        mode_grid.addWidget(repair_button, 0, 1)
+        mode_grid.addWidget(return_button, 1, 0, 1, 2)
+        mode_layout.addLayout(mode_grid)
+
+        action_row = QHBoxLayout()
+        settings_button = QPushButton("系統設定")
+        settings_button.setObjectName("secondaryButton")
+        settings_button.clicked.connect(self.open_settings)
+        back_button = QPushButton("返回登入")
+        back_button.setObjectName("secondaryButton")
+        back_button.clicked.connect(self.go_back)
+        action_row.addWidget(settings_button)
+        action_row.addWidget(back_button)
+        action_row.addStretch(1)
+        mode_layout.addLayout(action_row)
 
         container.layout.addStretch(1)
         container.layout.addWidget(create_page_header("選擇作業模式", "先確認目前操作人員與相機，再進入對應作業。"))
-        container.layout.addWidget(card)
+        container.layout.addWidget(status_card)
+        container.layout.addWidget(mode_card)
         container.layout.addStretch(1)
         container.layout.addWidget(build_footer())
 

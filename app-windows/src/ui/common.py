@@ -42,7 +42,8 @@ def build_logo_label(max_height: int = 140) -> QLabel:
 
 def create_mode_button(label: str) -> QPushButton:
     button = QPushButton(label)
-    button.setMinimumHeight(68)
+    button.setObjectName("modeButton")
+    button.setMinimumHeight(84)
     button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
     return button
 
@@ -113,15 +114,20 @@ def app_stylesheet(primary_color: str = "#2563eb", hover_color: str = "#1d4ed8")
         #sectionBody {{ font-size: 14px; color: #4b5563; line-height: 1.6; }}
         #subSectionTitle {{ font-size: 15px; font-weight: 700; color: #111827; }}
         #fieldLabel {{ font-size: 13px; color: #374151; }}
+        #heroName {{ font-size: 18px; font-weight: 700; color: #0f172a; }}
         #cameraStatus, #draftStatus, #settingsHint, #employeeStatus {{ font-size: 13px; color: #334155; }}
         #card {{ background-color: white; border: 1px solid #dbe2ea; border-radius: 16px; }}
         #subCard {{ background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }}
         QLabel {{ color: #111827; }}
         QLineEdit, QComboBox {{ min-height: 38px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #ffffff; }}
-        QTableWidget {{ border: 1px solid #cbd5e1; border-radius: 10px; background-color: white; }}
+        #heroInput {{ min-height: 58px; font-size: 28px; padding: 10px 16px; }}
+        QTableWidget {{ border: 1px solid #cbd5e1; border-radius: 10px; background-color: white; gridline-color: #e5e7eb; }}
+        QHeaderView::section {{ background-color: #f8fafc; color: #0f172a; padding: 10px; border: none; border-bottom: 1px solid #e5e7eb; font-weight: 700; }}
         QPushButton {{ padding: 10px 18px; border: none; border-radius: 10px; background-color: {primary_color}; color: white; font-size: 15px; font-weight: 600; }}
         QPushButton:hover {{ background-color: {hover_color}; }}
         #secondaryButton {{ background-color: #e5e7eb; color: #111827; }}
         #secondaryButton:hover {{ background-color: #d1d5db; }}
+        #modeButton {{ text-align: left; padding: 18px 20px; background-color: white; color: #0f172a; border: 1px solid #cbd5e1; }}
+        #modeButton:hover {{ background-color: #ecfeff; border: 1px solid #14b8a6; color: #0f172a; }}
         #footerLabel {{ font-size: 12px; color: #6b7280; }}
     """

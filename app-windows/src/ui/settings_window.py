@@ -1,24 +1,11 @@
 ﻿from __future__ import annotations
 
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent
-from PySide6.QtWidgets import (
-    QApplication,
-    QFileDialog,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QMainWindow,
-    QMessageBox,
-    QPushButton,
-    QScrollArea,
-    QTableWidget,
-    QTableWidgetItem,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtWidgets import QApplication, QFileDialog, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton, QScrollArea, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
-from services.employee_service import EmployeeService
+from services.employee_service import EmployeeRecord, EmployeeService
 from services.settings_service import AppSettings, SettingsService
 from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_footer, create_card, create_page_header
 
@@ -48,7 +35,7 @@ class SettingsWindow(QMainWindow):
         top_bar.addStretch(1)
 
         container.layout.addLayout(top_bar)
-        container.layout.addWidget(create_page_header("系統設定", "先修正基本設定與員工匯入，細緻版 UI 之後再整理。", show_logo=False))
+        container.layout.addWidget(create_page_header("系統設定", "這裡可設定 NAS、本地儲存，並可直接編輯員工資料。", show_logo=False))
 
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
@@ -64,7 +51,7 @@ class SettingsWindow(QMainWindow):
         settings_title.setObjectName("sectionTitle")
         settings_layout.addWidget(settings_title)
 
-        settings_hint = QLabel("先設定 NAS API 與本地儲存位置。相機選擇仍保留在模式選擇頁，避免作業時跟 webcam 打架。")
+        settings_hint = QLabel("先設定 NAS API 與本地儲存位置。相機選擇仍保留在模式選擇頁。")
         settings_hint.setObjectName("settingsHint")
         settings_hint.setWordWrap(True)
         settings_layout.addWidget(settings_hint)
@@ -90,7 +77,7 @@ class SettingsWindow(QMainWindow):
         save_row = QHBoxLayout()
         save_row.setContentsMargins(0, 0, 0, 0)
         save_row.setSpacing(12)
-        save_button = QPushButton("儲存設定")
+        save_button = QPushButton("儲存連線設定")
         save_button.clicked.connect(self.save_settings)
         save_row.addWidget(save_button)
         save_row.addStretch(1)
@@ -101,7 +88,7 @@ class SettingsWindow(QMainWindow):
         employee_title.setObjectName("sectionTitle")
         employee_layout.addWidget(employee_title)
 
-        employee_hint = QLabel("登入只輸入員工編號，名稱會自動帶出。支援 CSV 匯入；可先下載範例檔再填寫。")
+        employee_hint = QLabel("表格可直接編輯。新增或修改後，按「儲存員工資料」即可覆蓋目前員工檔。")
         employee_hint.setObjectName("settingsHint")
         employee_hint.setWordWrap(True)
         employee_layout.addWidget(employee_hint)
@@ -114,20 +101,27 @@ class SettingsWindow(QMainWindow):
         employee_button_row = QHBoxLayout()
         employee_button_row.setContentsMargins(0, 0, 0, 0)
         employee_button_row.setSpacing(12)
+        add_row_button = QPushButton("新增一筆")
+        add_row_button.setObjectName("secondaryButton")
+        add_row_button.clicked.connect(self.add_employee_row)
         download_button = QPushButton("下載範例檔")
         download_button.setObjectName("secondaryButton")
         download_button.clicked.connect(self.download_sample_file)
         import_button = QPushButton("匯入員工檔")
+        import_button.setObjectName("secondaryButton")
         import_button.clicked.connect(self.import_employee_file)
+        save_employee_button = QPushButton("儲存員工資料")
+        save_employee_button.clicked.connect(self.save_employee_table)
+        employee_button_row.addWidget(add_row_button)
         employee_button_row.addWidget(download_button)
         employee_button_row.addWidget(import_button)
+        employee_button_row.addWidget(save_employee_button)
         employee_button_row.addStretch(1)
         employee_layout.addLayout(employee_button_row)
 
         self.employee_table = QTableWidget(0, 2)
         self.employee_table.setHorizontalHeaderLabels(["員工編號", "員工名稱"])
         self.employee_table.verticalHeader().setVisible(False)
-        self.employee_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.employee_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.employee_table.setAlternatingRowColors(True)
         self.employee_table.horizontalHeader().setStretchLastSection(True)
@@ -177,7 +171,15 @@ class SettingsWindow(QMainWindow):
             local_storage_path=self.storage_path_input.text().strip(),
         )
         self.settings_service.save(settings)
-        QMessageBox.information(self, "儲存完成", "系統設定已更新。")
+        QMessageBox.information(self, "儲存完成", "連線與儲存設定已更新。")
+
+    def add_employee_row(self) -> None:
+        row_index = self.employee_table.rowCount()
+        self.employee_table.insertRow(row_index)
+        self.employee_table.setItem(row_index, 0, QTableWidgetItem(""))
+        self.employee_table.setItem(row_index, 1, QTableWidgetItem(""))
+        self.employee_table.setCurrentCell(row_index, 0)
+        self.employee_table.editItem(self.employee_table.item(row_index, 0))
 
     def download_sample_file(self) -> None:
         target_path, _ = QFileDialog.getSaveFileName(self, "下載員工範例檔", "packpal-employees-sample.csv", "CSV 檔案 (*.csv)")
@@ -199,6 +201,24 @@ class SettingsWindow(QMainWindow):
 
         self.refresh_employee_table()
         QMessageBox.information(self, "匯入完成", f"已匯入 {count} 筆員工資料。")
+
+    def save_employee_table(self) -> None:
+        records: list[EmployeeRecord] = []
+        for row_index in range(self.employee_table.rowCount()):
+            employee_id_item = self.employee_table.item(row_index, 0)
+            name_item = self.employee_table.item(row_index, 1)
+            employee_id = employee_id_item.text().strip() if employee_id_item else ""
+            name = name_item.text().strip() if name_item else ""
+            if employee_id and name:
+                records.append(EmployeeRecord(employee_id=employee_id, name=name))
+
+        if not records:
+            QMessageBox.warning(self, "資料不足", "請至少保留一筆完整的員工編號與員工名稱。")
+            return
+
+        count = self.employee_service.save_records(records)
+        self.refresh_employee_table()
+        QMessageBox.information(self, "儲存完成", f"已儲存 {count} 筆員工資料。")
 
     def refresh_employee_table(self) -> None:
         records = self.employee_service.load_records()

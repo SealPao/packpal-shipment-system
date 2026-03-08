@@ -11,7 +11,7 @@ from PySide6.QtWidgets import QApplication, QComboBox, QLabel, QLineEdit, QPushB
 from db.session import connect, initialize_database
 from services.camera_service import CameraOption
 from services.draft_service import DraftService
-from services.employee_service import EmployeeService
+from services.employee_service import EmployeeRecord, EmployeeService
 from services.settings_service import SettingsService
 from ui.login_window import LoginWindow
 from ui.mode_select_window import ModeSelectWindow
@@ -75,10 +75,11 @@ def test_login_window_uses_employee_lookup() -> None:
     assert len(edits) == 1
     assert edits[0].placeholderText() == "請輸入員工編號"
     assert "系統設定" in buttons
-    assert "進入作業" in buttons
+    assert "請點我開始工作" in buttons
 
     window.employee_id_input.setText("A001")
     assert window.employee_name_label.text() == "王小明"
+    assert "歡迎尊貴的 A001 王小明" in window.hero_message_label.text()
 
 
 def test_settings_window_renders_core_fields_and_employee_table() -> None:
@@ -86,26 +87,29 @@ def test_settings_window_renders_core_fields_and_employee_table() -> None:
     window = SettingsWindow()
     labels = [label.text() for label in window.findChildren(QLabel)]
     table = window.findChild(QTableWidget)
+    buttons = [button.text() for button in window.findChildren(QPushButton)]
 
     assert "NAS API 位址" in labels
     assert "本地儲存路徑" in labels
     assert "員工資料設定" in labels
-    assert "返回" in [button.text() for button in window.findChildren(QPushButton)]
+    assert "返回" in buttons
+    assert "新增一筆" in buttons
+    assert "儲存員工資料" in buttons
     assert table is not None
     assert table.columnCount() == 2
 
 
 def test_mode_selection_window_renders_camera_and_settings() -> None:
     write_employee_file()
-    employee = EmployeeService().find_by_id("A002")
+    employee = EmployeeRecord(employee_id="A002", name="陳美玲")
     window = ModeSelectWindow(current_employee=employee, camera_service=FakeCameraService(), draft_service=DraftService(unique_db_path("mode")))
     buttons = [button.text() for button in window.findChildren(QPushButton)]
     combo = window.findChild(QComboBox)
     labels = [label.text() for label in window.findChildren(QLabel)]
 
-    assert "出貨作業" in buttons
-    assert "維修收貨" in buttons
-    assert "退貨收貨" in buttons
+    assert any(text.startswith("出貨作業") for text in buttons)
+    assert any(text.startswith("維修收貨") for text in buttons)
+    assert any(text.startswith("退貨收貨") for text in buttons)
     assert "系統設定" in buttons
     assert combo is not None
     assert combo.count() == 2
