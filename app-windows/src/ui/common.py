@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QRect
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 
@@ -42,6 +42,31 @@ def build_footer() -> QLabel:
     return footer
 
 
+def _trim_transparent_edges(pixmap: QPixmap) -> QPixmap:
+    image = pixmap.toImage().convertToFormat(pixmap.toImage().format())
+    if not image.hasAlphaChannel():
+        return pixmap
+
+    left = image.width()
+    top = image.height()
+    right = -1
+    bottom = -1
+
+    for y in range(image.height()):
+        for x in range(image.width()):
+            if image.pixelColor(x, y).alpha() > 0:
+                left = min(left, x)
+                top = min(top, y)
+                right = max(right, x)
+                bottom = max(bottom, y)
+
+    if right < left or bottom < top:
+        return pixmap
+
+    rect = QRect(left, top, right - left + 1, bottom - top + 1)
+    return pixmap.copy(rect)
+
+
 def build_logo_label(max_height: int = 140) -> QLabel:
     logo = QLabel()
     logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -49,7 +74,7 @@ def build_logo_label(max_height: int = 140) -> QLabel:
     logo.setMinimumHeight(max_height)
     path = logo_path()
     if path.exists():
-        pixmap = QPixmap(str(path))
+        pixmap = _trim_transparent_edges(QPixmap(str(path)))
         scaled = pixmap.scaled(
             int(max_height * 2.4),
             max_height,
@@ -187,4 +212,5 @@ def app_stylesheet(primary_color: str = "#2563eb", hover_color: str = "#1d4ed8")
         #modeButton:hover {{ background-color: #ecfeff; border: 1px solid #14b8a6; color: #0f172a; }}
         #footerLabel {{ font-size: 12px; color: #6b7280; }}
     """
+
 

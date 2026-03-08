@@ -513,8 +513,12 @@ class SettingsPage(QWidget):
     def add_employee_row(self) -> None:
         row_index = self.employee_table.rowCount()
         self.employee_table.insertRow(row_index)
-        self.employee_table.setItem(row_index, 0, QTableWidgetItem(""))
-        self.employee_table.setItem(row_index, 1, QTableWidgetItem(""))
+        employee_id_item = QTableWidgetItem("")
+        employee_id_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        employee_name_item = QTableWidgetItem("")
+        employee_name_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.employee_table.setItem(row_index, 0, employee_id_item)
+        self.employee_table.setItem(row_index, 1, employee_name_item)
         self.employee_table.setCurrentCell(row_index, 0)
         self.employee_table.editItem(self.employee_table.item(row_index, 0))
 
@@ -566,8 +570,12 @@ class SettingsPage(QWidget):
         records = self.window.employee_service.load_records()
         self.employee_table.setRowCount(len(records))
         for row_index, record in enumerate(records):
-            self.employee_table.setItem(row_index, 0, QTableWidgetItem(record.employee_id))
-            self.employee_table.setItem(row_index, 1, QTableWidgetItem(record.name))
+            employee_id_item = QTableWidgetItem(record.employee_id)
+            employee_id_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            employee_name_item = QTableWidgetItem(record.name)
+            employee_name_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.employee_table.setItem(row_index, 0, employee_id_item)
+            self.employee_table.setItem(row_index, 1, employee_name_item)
         self.employee_count_label.setText(f"目前員工資料筆數：{len(records)}")
         self.employee_file_label.setText(f"目前員工檔：{self.window.employee_service.employee_file_path()}")
 
@@ -737,6 +745,7 @@ class AppWindow(QMainWindow):
 
     def selected_camera_name(self) -> str:
         return self.mode_page.selected_camera_name()
+
 
 
 
