@@ -8,7 +8,7 @@ from services.camera_service import CameraOption, CameraService
 from services.draft_service import DraftService
 from services.employee_service import EmployeeRecord, EmployeeService
 from services.settings_service import SettingsService
-from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_footer, create_card, create_mode_button, create_page_header
+from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_footer, create_card, create_mode_button, create_split_header
 from ui.repair_receiving_window import RepairReceivingWindow
 from ui.return_receiving_window import ReturnReceivingWindow
 from ui.settings_window import SettingsWindow
@@ -35,30 +35,33 @@ class ModeSelectWindow(QMainWindow):
         container = ScreenContainer()
         self.setCentralWidget(container)
 
-        container.layout.addStretch(1)
-        container.layout.addWidget(create_page_header("選擇作業模式", "請直接選擇要進行的作業。"))
+        container.layout.addWidget(create_split_header("選擇作業模式", "請直接選擇要進行的作業。"))
 
         card, card_layout = create_card()
+        card_layout.setSpacing(20)
+
         operator_label = QLabel(self._operator_text())
         operator_label.setObjectName("cameraStatus")
         card_layout.addWidget(operator_label)
 
         mode_row = QHBoxLayout()
-        mode_row.setSpacing(16)
+        mode_row.setSpacing(20)
         shipment_button = create_mode_button("出貨作業")
         repair_button = create_mode_button("維修收貨")
         return_button = create_mode_button("退貨收貨")
         shipment_button.clicked.connect(lambda: self.open_child_window(ShipmentWindow(self, self.selected_camera_name(), self.draft_service)))
         repair_button.clicked.connect(lambda: self.open_child_window(RepairReceivingWindow(self, self.selected_camera_name(), self.draft_service)))
         return_button.clicked.connect(lambda: self.open_child_window(ReturnReceivingWindow(self, self.selected_camera_name(), self.draft_service)))
-        mode_row.addWidget(shipment_button)
-        mode_row.addWidget(repair_button)
-        mode_row.addWidget(return_button)
-        card_layout.addLayout(mode_row)
+        mode_row.addWidget(shipment_button, 1)
+        mode_row.addWidget(repair_button, 1)
+        mode_row.addWidget(return_button, 1)
+        card_layout.addLayout(mode_row, 1)
 
         bottom_row = QHBoxLayout()
-        bottom_row.setSpacing(12)
+        bottom_row.setSpacing(16)
+
         left_actions = QHBoxLayout()
+        left_actions.setSpacing(12)
         settings_button = QPushButton("系統設定")
         settings_button.setObjectName("secondaryButton")
         settings_button.clicked.connect(self.open_settings)
@@ -70,22 +73,25 @@ class ModeSelectWindow(QMainWindow):
         left_actions_widget = QWidget()
         left_actions_widget.setLayout(left_actions)
 
-        right_camera = QHBoxLayout()
-        right_camera.addWidget(QLabel("作業相機"))
+        camera_wrap = QWidget()
+        camera_layout = QHBoxLayout(camera_wrap)
+        camera_layout.setContentsMargins(0, 0, 0, 0)
+        camera_layout.setSpacing(10)
+        camera_label = QLabel("作業相機")
+        camera_label.setObjectName("fieldLabel")
         self.camera_combo = QComboBox()
-        self.camera_combo.setMinimumWidth(240)
+        self.camera_combo.setMinimumWidth(320)
+        self.camera_combo.setMinimumHeight(48)
         self.camera_combo.currentIndexChanged.connect(self.persist_selected_camera)
-        right_camera.addWidget(self.camera_combo)
-        right_camera_widget = QWidget()
-        right_camera_widget.setLayout(right_camera)
+        camera_layout.addWidget(camera_label)
+        camera_layout.addWidget(self.camera_combo)
 
         bottom_row.addWidget(left_actions_widget)
         bottom_row.addStretch(1)
-        bottom_row.addWidget(right_camera_widget)
+        bottom_row.addWidget(camera_wrap)
         card_layout.addLayout(bottom_row)
 
-        container.layout.addWidget(card)
-        container.layout.addStretch(1)
+        container.layout.addWidget(card, 1)
         container.layout.addWidget(build_footer())
 
         self.refresh_camera_options()

@@ -2,7 +2,7 @@
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent
-from PySide6.QtWidgets import QApplication, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QApplication, QFrame, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton, QVBoxLayout, QWidget
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from services.employee_service import EmployeeRecord, EmployeeService
@@ -31,12 +31,25 @@ class LoginWindow(QMainWindow):
         card, card_layout = create_card()
         card_layout.setSpacing(20)
 
+        input_shell = QFrame()
+        input_shell.setObjectName("heroInputShell")
+        input_layout = QHBoxLayout(input_shell)
+        input_layout.setContentsMargins(18, 8, 18, 8)
+        input_layout.setSpacing(12)
+
+        prompt_label = QLabel("請輸入您的員工號碼")
+        prompt_label.setObjectName("heroInputHint")
+        prompt_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+
         self.employee_id_input = QLineEdit()
         self.employee_id_input.setObjectName("heroInput")
-        self.employee_id_input.setPlaceholderText("請輸入您的員工號碼")
+        self.employee_id_input.setPlaceholderText("")
         self.employee_id_input.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.employee_id_input.textChanged.connect(self.handle_employee_id_changed)
         self.employee_id_input.returnPressed.connect(self.handle_enter)
+
+        input_layout.addWidget(prompt_label)
+        input_layout.addWidget(self.employee_id_input, 1)
 
         self.enter_button = QPushButton("請點我開始工作")
         self.enter_button.setMinimumHeight(78)
@@ -48,7 +61,7 @@ class LoginWindow(QMainWindow):
         self.helper_label.setWordWrap(True)
         self.helper_label.setMinimumHeight(28)
 
-        card_layout.addWidget(self.employee_id_input)
+        card_layout.addWidget(input_shell)
         card_layout.addWidget(self.enter_button)
         card_layout.addWidget(self.helper_label)
 

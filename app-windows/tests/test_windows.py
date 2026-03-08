@@ -70,10 +70,12 @@ def test_login_window_uses_employee_lookup() -> None:
     window = LoginWindow()
     edits = window.findChildren(QLineEdit)
     buttons = [button.text() for button in window.findChildren(QPushButton)]
+    labels = [label.text() for label in window.findChildren(QLabel)]
 
     assert window.windowTitle() == "出貨小幫手 - 進入作業"
     assert len(edits) == 1
-    assert edits[0].placeholderText() == "請輸入您的員工號碼"
+    assert edits[0].placeholderText() == ""
+    assert "請輸入您的員工號碼" in labels
     assert "系統設定" in buttons
     assert "請點我開始工作" in buttons
 
@@ -111,6 +113,7 @@ def test_mode_selection_window_renders_simple_actions() -> None:
     assert combo is not None
     assert combo.currentText() == "Document Camera"
     assert "目前操作人員：342 / 包兆強" in labels
+    assert "選擇作業模式" in labels
 
 
 def test_shipment_window_can_save_and_load_draft() -> None:
@@ -128,25 +131,24 @@ def test_shipment_window_can_save_and_load_draft() -> None:
     assert reloaded.scan_input.text() == "SHP-TEST-001"
 
 
-def test_repair_window_renders_contract_aligned_fields() -> None:
+def test_repair_window_renders_new_stage_ui() -> None:
     window = RepairReceivingWindow(selected_camera_name="USB Camera", draft_service=DraftService(unique_db_path("repair")))
     labels = [label.text() for label in window.findChildren(QLabel)]
-    placeholders = [field.placeholderText() for field in window.findChildren(QLineEdit)]
 
     assert window.windowTitle() == "出貨小幫手 - 維修收貨"
-    assert "維修資訊" in labels
-    assert "目前相機：USB Camera" in labels
-    assert any(text == "請輸入 備註" for text in placeholders)
+    assert "維修收貨" in labels
+    assert "請掃描維修單號開始收貨" in labels
+    assert "相機：USB Camera" in labels
 
 
-def test_return_window_renders_contract_aligned_fields() -> None:
+def test_return_window_renders_new_stage_ui() -> None:
     window = ReturnReceivingWindow(selected_camera_name="Document Camera", draft_service=DraftService(unique_db_path("return")))
     labels = [label.text() for label in window.findChildren(QLabel)]
-    placeholders = [field.placeholderText() for field in window.findChildren(QLineEdit)]
 
     assert window.windowTitle() == "出貨小幫手 - 退貨收貨"
-    assert "退貨資訊" in labels
-    assert any(text == "請輸入 退貨原因" for text in placeholders)
+    assert "退貨收貨" in labels
+    assert "請掃描退貨單號開始收貨" in labels
+    assert "相機：Document Camera" in labels
 
 
 def test_database_initialization_creates_record_drafts_table() -> None:
