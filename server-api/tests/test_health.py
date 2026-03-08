@@ -28,6 +28,15 @@ def test_shipment_list_endpoint_returns_expected_shape() -> None:
     assert payload["items"][0]["record_no"].startswith("SHP-")
 
 
+def test_shipment_list_endpoint_supports_filters() -> None:
+    response = client.get("/shipments", params={"status": "queued", "q": "南區"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload["items"]) == 1
+    assert payload["items"][0]["record_no"] == "SHP-2026-0002"
+
+
 def test_shipment_detail_endpoint_returns_expected_shape() -> None:
     response = client.get("/shipments/shipment-001")
 

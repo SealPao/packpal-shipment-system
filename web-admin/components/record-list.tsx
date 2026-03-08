@@ -8,11 +8,15 @@ export default function RecordList({
   modulePath,
   intro,
   items,
+  q,
+  status,
 }: {
   moduleLabel: string;
   modulePath: string;
   intro: string;
   items: RecordDetail[];
+  q?: string;
+  status?: string;
 }) {
   return (
     <main>
@@ -20,6 +24,23 @@ export default function RecordList({
         <span className="eyebrow">{moduleLabel}</span>
         <h2>{moduleLabel} module placeholder</h2>
         <p>{intro}</p>
+      </section>
+
+      <section className="section panel">
+        <form className="grid" method="get">
+          <label>
+            <span className="eyebrow">Keyword</span>
+            <input name="q" defaultValue={q ?? ""} placeholder="Search record no, customer, notes" />
+          </label>
+          <label>
+            <span className="eyebrow">Status</span>
+            <input name="status" defaultValue={status ?? ""} placeholder="draft / queued / received" />
+          </label>
+          <div>
+            <span className="eyebrow">Apply</span>
+            <button type="submit">Filter records</button>
+          </div>
+        </form>
       </section>
 
       <section className="grid">

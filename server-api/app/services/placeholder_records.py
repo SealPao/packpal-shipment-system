@@ -53,11 +53,31 @@ _PLACEHOLDER_DATA = {
 }
 
 
-def list_records(module: str) -> list[RecordSummary]:
+def _matches(record: RecordDetail, q: str | None = None, status: str | None = None) -> bool:
+    if status and record.status != status:
+        return False
+
+    if q:
+        keyword = q.lower()
+        haystacks = [
+            record.record_no,
+            record.customer_name,
+            record.notes,
+            *record.tags,
+        ]
+        if not any(keyword in value.lower() for value in haystacks):
+            return False
+
+    return True
+
+
+def list_records(module: str, q: str | None = None, status: str | None = None) -> list[RecordSummary]:
     return [
         RecordSummary(**item.model_dump(include={"id", "record_no", "status", "customer_name", "updated_at"}))
         for item in _PLACEHOLDER_DATA[module]
+        if _matches(item, q=q, status=status)
     ]
+
 
 
 def get_record(module: str, record_id: str) -> RecordDetail | None:

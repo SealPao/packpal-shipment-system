@@ -28,10 +28,11 @@ test("records page renders expected text", () => {
 });
 
 test("shipments list page renders expected text", () => {
-  const html = renderToStaticMarkup(<ShipmentsPage />);
+  const html = renderToStaticMarkup(<ShipmentsPage searchParams={{ q: "北區" }} />);
 
   assert.match(html, /SHP-2026-0001/);
-  assert.match(html, /View detail/);
+  assert.doesNotMatch(html, /SHP-2026-0002/);
+  assert.match(html, /Filter records/);
 });
 
 test("shipment detail page renders expected text", () => {
@@ -44,10 +45,10 @@ test("shipment detail page renders expected text", () => {
 });
 
 test("repairs list page renders expected text", () => {
-  const html = renderToStaticMarkup(<RepairsPage />);
+  const html = renderToStaticMarkup(<RepairsPage searchParams={{ status: "received" }} />);
 
   assert.match(html, /RPR-2026-0001/);
-  assert.match(html, /View detail/);
+  assert.match(html, /Filter records/);
 });
 
 test("repair detail page renders expected text", () => {
@@ -60,10 +61,10 @@ test("repair detail page renders expected text", () => {
 });
 
 test("returns list page renders expected text", () => {
-  const html = renderToStaticMarkup(<ReturnsPage />);
+  const html = renderToStaticMarkup(<ReturnsPage searchParams={{ q: "線上" }} />);
 
   assert.match(html, /RTN-2026-0001/);
-  assert.match(html, /View detail/);
+  assert.match(html, /Filter records/);
 });
 
 test("return detail page renders expected text", () => {

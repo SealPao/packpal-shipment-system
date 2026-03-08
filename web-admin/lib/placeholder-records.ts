@@ -60,3 +60,21 @@ export const recordData: Record<string, RecordDetail[]> = {
     },
   ],
 };
+
+export function filterRecords(items: RecordDetail[], q?: string, status?: string) {
+  return items.filter((item) => {
+    if (status && item.status !== status) {
+      return false;
+    }
+
+    if (q) {
+      const keyword = q.toLowerCase();
+      const haystacks = [item.record_no, item.customer_name, item.notes, ...item.tags];
+      if (!haystacks.some((value) => value.toLowerCase().includes(keyword))) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+}

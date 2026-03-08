@@ -2,7 +2,8 @@
 
 from pathlib import Path
 
-project_root = Path.cwd()
+spec_path = Path(SPEC)
+project_root = spec_path.parent
 src_root = project_root / "src"
 
 
