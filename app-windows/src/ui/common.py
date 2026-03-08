@@ -46,10 +46,17 @@ def build_logo_label(max_height: int = 140) -> QLabel:
     logo = QLabel()
     logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
     logo.setObjectName("logoLabel")
+    logo.setMinimumHeight(max_height)
     path = logo_path()
     if path.exists():
         pixmap = QPixmap(str(path))
-        logo.setPixmap(pixmap.scaledToHeight(max_height, Qt.TransformationMode.SmoothTransformation))
+        scaled = pixmap.scaled(
+            int(max_height * 2.4),
+            max_height,
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation,
+        )
+        logo.setPixmap(scaled)
     return logo
 
 
@@ -180,3 +187,4 @@ def app_stylesheet(primary_color: str = "#2563eb", hover_color: str = "#1d4ed8")
         #modeButton:hover {{ background-color: #ecfeff; border: 1px solid #14b8a6; color: #0f172a; }}
         #footerLabel {{ font-size: 12px; color: #6b7280; }}
     """
+

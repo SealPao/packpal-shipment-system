@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QFileDialog,
     QGridLayout,
+    QHeaderView,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -420,7 +421,8 @@ class SettingsPage(QWidget):
         self.employee_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.employee_table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
         self.employee_table.setAlternatingRowColors(True)
-        self.employee_table.horizontalHeader().setStretchLastSection(True)
+        self.employee_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.employee_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.employee_table.setMinimumHeight(260)
         employee_layout.addWidget(self.employee_table, 1)
 
@@ -735,6 +737,10 @@ class AppWindow(QMainWindow):
 
     def selected_camera_name(self) -> str:
         return self.mode_page.selected_camera_name()
+
+
+
+
 
 
 
