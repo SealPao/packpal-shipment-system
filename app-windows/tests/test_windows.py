@@ -73,12 +73,11 @@ def test_login_window_uses_employee_lookup() -> None:
 
     assert window.windowTitle() == "出貨小幫手 - 進入作業"
     assert len(edits) == 1
-    assert edits[0].placeholderText() == "員工號碼"
+    assert edits[0].placeholderText() == "請輸入您的員工號碼"
     assert "系統設定" in buttons
     assert "請點我開始工作" in buttons
 
     window.employee_id_input.setText("342")
-    assert window.employee_name_label.text() == "歡迎尊貴的 342 包兆強"
     assert "歡迎尊貴的 342 包兆強" in window.enter_button.text()
 
 
@@ -156,5 +155,3 @@ def test_database_initialization_creates_record_drafts_table() -> None:
     with connect(db_path) as connection:
         row = connection.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'record_drafts'").fetchone()
     assert row is not None
-
-

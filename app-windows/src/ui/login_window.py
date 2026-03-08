@@ -31,20 +31,12 @@ class LoginWindow(QMainWindow):
         card, card_layout = create_card()
         card_layout.setSpacing(20)
 
-        prompt = QLabel("員工號碼")
-        prompt.setObjectName("fieldLabel")
-        prompt.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
         self.employee_id_input = QLineEdit()
         self.employee_id_input.setObjectName("heroInput")
-        self.employee_id_input.setPlaceholderText("員工號碼")
+        self.employee_id_input.setPlaceholderText("請輸入您的員工號碼")
+        self.employee_id_input.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.employee_id_input.textChanged.connect(self.handle_employee_id_changed)
         self.employee_id_input.returnPressed.connect(self.handle_enter)
-
-        self.employee_name_label = QLabel("請輸入員工號碼")
-        self.employee_name_label.setObjectName("heroName")
-        self.employee_name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.employee_name_label.setWordWrap(True)
 
         self.enter_button = QPushButton("請點我開始工作")
         self.enter_button.setMinimumHeight(78)
@@ -54,10 +46,9 @@ class LoginWindow(QMainWindow):
         self.helper_label.setObjectName("employeeStatus")
         self.helper_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.helper_label.setWordWrap(True)
+        self.helper_label.setMinimumHeight(28)
 
-        card_layout.addWidget(prompt)
         card_layout.addWidget(self.employee_id_input)
-        card_layout.addWidget(self.employee_name_label)
         card_layout.addWidget(self.enter_button)
         card_layout.addWidget(self.helper_label)
 
@@ -91,7 +82,6 @@ class LoginWindow(QMainWindow):
         self.current_employee = employee
 
         if employee is None:
-            self.employee_name_label.setText("請輸入員工號碼")
             if employee_id:
                 self.enter_button.setText("查不到員工，請先修正資料")
                 self.helper_label.setText("查不到員工，請到系統設定編輯或匯入員工資料。")
@@ -100,9 +90,8 @@ class LoginWindow(QMainWindow):
                 self.helper_label.setText("若查不到員工，請到系統設定編輯或匯入員工資料。")
             return
 
-        self.employee_name_label.setText(f"歡迎尊貴的 {employee.employee_id} {employee.name}")
         self.enter_button.setText(f"歡迎尊貴的 {employee.employee_id} {employee.name}，請點我開始工作")
-        self.helper_label.setText("若查不到員工，請到系統設定編輯或匯入員工資料。")
+        self.helper_label.setText("")
 
     def handle_enter(self) -> None:
         employee_id = self.employee_id_input.text().strip()
