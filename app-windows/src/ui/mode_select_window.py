@@ -1,12 +1,13 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from PySide6.QtWidgets import QComboBox, QHBoxLayout, QLabel, QMainWindow, QPushButton, QWidget
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from services.camera_service import CameraOption, CameraService
 from services.draft_service import DraftService
+from services.employee_service import EmployeeRecord, EmployeeService
 from services.settings_service import SettingsService
-from ui.common import ScreenContainer, app_stylesheet, build_footer, create_card, create_mode_button, create_page_header
+from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_footer, create_card, create_mode_button, create_page_header
 from ui.repair_receiving_window import RepairReceivingWindow
 from ui.return_receiving_window import ReturnReceivingWindow
 from ui.settings_window import SettingsWindow
@@ -14,27 +15,27 @@ from ui.shipment_window import ShipmentWindow
 
 
 class ModeSelectWindow(QMainWindow):
-    def __init__(self, parent_login: QMainWindow | None = None, camera_service: CameraService | None = None, draft_service: DraftService | None = None) -> None:
+    def __init__(self, parent_login: QMainWindow | None = None, current_employee: EmployeeRecord | None = None, camera_service: CameraService | None = None, draft_service: DraftService | None = None) -> None:
         super().__init__(parent_login)
         self.parent_login = parent_login
+        self.current_employee = current_employee
         self.child_window: QMainWindow | None = None
         self.settings_window: SettingsWindow | None = None
         self.camera_service = camera_service or CameraService()
         self.draft_service = draft_service or DraftService()
         self.settings_service = SettingsService()
+        self.employee_service = EmployeeService(self.settings_service)
         self.cameras: list[CameraOption] = []
 
         self.setWindowTitle(f"{APP_TITLE} - 模式選擇")
         self.setMinimumSize(WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT)
+        apply_window_icon(self)
 
         container = ScreenContainer()
         self.setCentralWidget(container)
 
-        settings = self.settings_service.load()
         card, card_layout = create_card()
-        operator_label = QLabel(f"目前操作人員：{settings.operator_name or '未設定'}")
-        operator_label.setObjectName("cameraStatus")
-        card_layout.addWidget(operator_label)
+        card_layout.addWidget(self._build_employee_status())
         card_layout.addWidget(self._build_camera_section())
 
         shipment_button = create_mode_button("出貨作業")
@@ -59,7 +60,7 @@ class ModeSelectWindow(QMainWindow):
         card_layout.addWidget(back_button)
 
         container.layout.addStretch(1)
-        container.layout.addWidget(create_page_header("請選擇作業模式", "先設定相機與系統參數，再進入各作業畫面。"))
+        container.layout.addWidget(create_page_header("選擇作業模式", "先確認目前操作人員與相機，再進入對應作業。"))
         container.layout.addWidget(card)
         container.layout.addStretch(1)
         container.layout.addWidget(build_footer())
@@ -67,13 +68,22 @@ class ModeSelectWindow(QMainWindow):
         self.refresh_camera_options()
         self.setStyleSheet(app_stylesheet("#0f766e", "#0d5f59"))
 
+    def _build_employee_status(self) -> QLabel:
+        if self.current_employee is None:
+            text = "目前尚未帶入操作人員。"
+        else:
+            text = f"目前操作人員：{self.current_employee.employee_id} / {self.current_employee.name}"
+        label = QLabel(text)
+        label.setObjectName("cameraStatus")
+        return label
+
     def _build_camera_section(self) -> QWidget:
         wrapper = QWidget()
         layout = QHBoxLayout(wrapper)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(12)
 
-        label = QLabel("相機裝置")
+        label = QLabel("作業相機")
         label.setMinimumWidth(90)
         self.camera_combo = QComboBox()
         self.camera_combo.currentIndexChanged.connect(self.persist_selected_camera)
@@ -96,9 +106,9 @@ class ModeSelectWindow(QMainWindow):
         self.camera_combo.clear()
 
         if not self.cameras:
-            self.camera_combo.addItem("未偵測到相機", "")
+            self.camera_combo.addItem("沒有偵測到相機", "")
             self.camera_combo.setEnabled(False)
-            self.camera_status_label.setText("目前沒有可用相機")
+            self.camera_status_label.setText("目前沒有可用相機。")
         else:
             self.camera_combo.setEnabled(True)
             for camera in self.cameras:
@@ -109,9 +119,9 @@ class ModeSelectWindow(QMainWindow):
                     if camera.id == selected_camera.id:
                         selected_index = index
                         break
-                self.camera_status_label.setText(f"已選擇：{selected_camera.name}")
+                self.camera_status_label.setText(f"已選擇相機：{selected_camera.name}")
             else:
-                self.camera_status_label.setText("請選擇相機")
+                self.camera_status_label.setText("請選擇作業相機。")
             self.camera_combo.setCurrentIndex(selected_index)
 
         self.camera_combo.blockSignals(False)
@@ -120,7 +130,7 @@ class ModeSelectWindow(QMainWindow):
         camera_id = str(self.camera_combo.currentData())
         if camera_id:
             self.camera_service.save_selected_camera_id(camera_id)
-            self.camera_status_label.setText(f"已選擇：{self.selected_camera_name()}")
+            self.camera_status_label.setText(f"已選擇相機：{self.selected_camera_name()}")
 
     def selected_camera_name(self) -> str | None:
         camera_id = str(self.camera_combo.currentData())
@@ -130,7 +140,7 @@ class ModeSelectWindow(QMainWindow):
         return None
 
     def open_settings(self) -> None:
-        self.settings_window = SettingsWindow(parent_window=self, settings_service=self.settings_service)
+        self.settings_window = SettingsWindow(parent_window=self, settings_service=self.settings_service, employee_service=self.employee_service)
         self.settings_window.show()
         self.hide()
 

@@ -1,32 +1,26 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from services.draft_service import DraftService
 from ui.operation_window_base import OperationWindowBase
 
 
 class ShipmentWindow(OperationWindowBase):
-    def __init__(
-        self,
-        parent_mode_select=None,
-        selected_camera_name: str | None = None,
-        draft_service: DraftService | None = None,
-    ) -> None:
+    def __init__(self, parent_mode_select=None, selected_camera_name: str | None = None, draft_service: DraftService | None = None) -> None:
         super().__init__(
             module_key="shipments",
             page_title="出貨作業",
-            page_subtitle="此頁面為出貨流程主畫面骨架，欄位名稱已先對齊未來 record contract。",
-            section_title="預計整合的出貨步驟",
-            section_body="目前先建立與後端契約接近的欄位語意，之後接資料與上傳流程時可以直接映射。",
+            page_subtitle="先整理本次出貨資料，再進行拍照、掃碼與後續上傳流程。",
+            section_title="出貨資料草稿",
+            section_body="這一頁先保留欄位骨架與草稿功能，後續再接 ERP、NAS 與正式 API。",
             form_sections=[
-                ("Record Summary", ["record_no", "customer_name", "status"]),
-                ("Shipment Details", ["updated_at", "notes", "attachments"]),
-                ("Local Workflow", ["scan_code", "photo_checkpoint", "upload_queue"]),
+                ("基本資料", ["record_no", "customer_name", "status"]),
+                ("出貨內容", ["updated_at", "notes", "attachments"]),
+                ("現場流程", ["scan_code", "photo_checkpoint", "upload_queue"]),
             ],
             checklist_items=[
-                "record_no 對應出貨單號或單據編號",
-                "customer_name 對應客戶或通路名稱",
-                "attachments 對應拍照與附檔清單",
-                "status 對應本地處理與上傳狀態",
+                "先確認單號、客戶名稱與目前狀態。",
+                "拍照、附件與上傳佇列目前只保留欄位，不會真正上傳。",
+                "需要暫停時可直接儲存草稿，稍後再載入。",
             ],
             selected_camera_name=selected_camera_name,
             draft_service=draft_service,

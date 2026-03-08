@@ -1,9 +1,10 @@
-# -*- mode: python ; coding: utf-8 -*-
+﻿# -*- mode: python ; coding: utf-8 -*-
 
 from pathlib import Path
 
 spec_path = Path(SPEC)
 project_root = spec_path.parent
+repo_root = project_root.parent
 src_root = project_root / "src"
 
 
@@ -11,7 +12,7 @@ a = Analysis(
     [str(src_root / "main.py")],
     pathex=[str(src_root)],
     binaries=[],
-    datas=[],
+    datas=[(str(repo_root / "Logo.png"), ".")],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

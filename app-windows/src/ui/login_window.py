@@ -1,11 +1,12 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QFormLayout, QHBoxLayout, QLineEdit, QMainWindow, QMessageBox, QPushButton
+from PySide6.QtWidgets import QFormLayout, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
+from services.employee_service import EmployeeRecord, EmployeeService
 from services.settings_service import SettingsService
-from ui.common import ScreenContainer, app_stylesheet, build_footer, create_card, create_page_header
+from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_footer, create_card, create_page_header
 from ui.mode_select_window import ModeSelectWindow
 from ui.settings_window import SettingsWindow
 
@@ -16,9 +17,12 @@ class LoginWindow(QMainWindow):
         self.mode_window: ModeSelectWindow | None = None
         self.settings_window: SettingsWindow | None = None
         self.settings_service = SettingsService()
+        self.employee_service = EmployeeService(self.settings_service)
+        self.current_employee: EmployeeRecord | None = None
 
         self.setWindowTitle(f"{APP_TITLE} - 進入作業")
         self.setMinimumSize(WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT)
+        apply_window_icon(self)
 
         container = ScreenContainer()
         self.setCentralWidget(container)
@@ -29,11 +33,21 @@ class LoginWindow(QMainWindow):
         form.setSpacing(12)
         form.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
 
-        saved_settings = self.settings_service.load()
-        self.operator_input = QLineEdit(saved_settings.operator_name)
-        self.operator_input.setPlaceholderText("請輸入操作人員名稱")
+        self.employee_id_input = QLineEdit()
+        self.employee_id_input.setPlaceholderText("請輸入員工編號")
+        self.employee_id_input.textChanged.connect(self.handle_employee_id_changed)
 
-        form.addRow("操作人員", self.operator_input)
+        self.employee_name_input = QLineEdit()
+        self.employee_name_input.setPlaceholderText("輸入員工編號後自動帶出名稱")
+        self.employee_name_input.setReadOnly(True)
+
+        self.employee_status_label = QLabel("請先輸入員工編號；若沒有資料，請先到系統設定匯入員工檔。")
+        self.employee_status_label.setObjectName("employeeStatus")
+        self.employee_status_label.setWordWrap(True)
+
+        form.addRow("員工編號", self.employee_id_input)
+        form.addRow("員工名稱", self.employee_name_input)
+        form.addRow("說明", self.employee_status_label)
 
         action_row = QHBoxLayout()
         settings_button = QPushButton("系統設定")
@@ -51,31 +65,46 @@ class LoginWindow(QMainWindow):
         card_layout.addLayout(action_row)
 
         container.layout.addStretch(1)
-        container.layout.addWidget(create_page_header("出貨小幫手", "輸入操作人員名稱後即可開始，不需要密碼。"))
+        container.layout.addWidget(create_page_header("出貨小幫手", "請輸入員工編號，系統會自動帶出名稱後再進入作業。"))
         container.layout.addWidget(card)
         container.layout.addStretch(1)
         container.layout.addWidget(build_footer())
 
         self.setStyleSheet(app_stylesheet())
 
-    def handle_enter(self) -> None:
-        operator_name = self.operator_input.text().strip()
-        if not operator_name:
-            QMessageBox.warning(self, "資料不足", "請先輸入操作人員名稱。")
+    def handle_employee_id_changed(self) -> None:
+        employee_id = self.employee_id_input.text().strip()
+        employee = self.employee_service.find_by_id(employee_id)
+        self.current_employee = employee
+
+        if employee is None:
+            self.employee_name_input.clear()
+            if employee_id:
+                self.employee_status_label.setText("查無此員工編號，請確認後再進入作業。")
+            else:
+                self.employee_status_label.setText("請先輸入員工編號；若沒有資料，請先到系統設定匯入員工檔。")
             return
 
-        current = self.settings_service.load()
-        self.settings_service.save(current.__class__(
-            operator_name=operator_name,
-            nas_url=current.nas_url,
-            local_storage_path=current.local_storage_path,
-        ))
+        self.employee_name_input.setText(employee.name)
+        self.employee_status_label.setText(f"已帶出員工：{employee.employee_id} / {employee.name}")
 
-        self.mode_window = ModeSelectWindow(parent_login=self)
+    def handle_enter(self) -> None:
+        employee_id = self.employee_id_input.text().strip()
+        if not employee_id:
+            QMessageBox.warning(self, "資料不足", "請先輸入員工編號。")
+            return
+
+        employee = self.employee_service.find_by_id(employee_id)
+        if employee is None:
+            QMessageBox.warning(self, "查無員工", "找不到這個員工編號，請先到系統設定匯入員工資料。")
+            return
+
+        self.current_employee = employee
+        self.mode_window = ModeSelectWindow(parent_login=self, current_employee=employee)
         self.mode_window.show()
         self.hide()
 
     def open_settings(self) -> None:
-        self.settings_window = SettingsWindow(parent_window=self, settings_service=self.settings_service)
+        self.settings_window = SettingsWindow(parent_window=self, settings_service=self.settings_service, employee_service=self.employee_service)
         self.settings_window.show()
         self.hide()

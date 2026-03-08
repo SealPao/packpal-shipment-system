@@ -1,32 +1,26 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from services.draft_service import DraftService
 from ui.operation_window_base import OperationWindowBase
 
 
 class RepairReceivingWindow(OperationWindowBase):
-    def __init__(
-        self,
-        parent_mode_select=None,
-        selected_camera_name: str | None = None,
-        draft_service: DraftService | None = None,
-    ) -> None:
+    def __init__(self, parent_mode_select=None, selected_camera_name: str | None = None, draft_service: DraftService | None = None) -> None:
         super().__init__(
             module_key="repairs",
             page_title="維修收貨",
-            page_subtitle="此頁面為維修收貨流程骨架，欄位名稱已先對齊未來 record contract。",
-            section_title="預計整合的維修收貨步驟",
-            section_body="先以共通 record contract 命名收斂，再逐步補上維修流程專有欄位。",
+            page_subtitle="先建立維修收貨草稿，再補拍照、序號與文件檢查。",
+            section_title="維修收貨草稿",
+            section_body="後續會接正式維修收貨流程；目前先整理欄位、相機與草稿保存能力。",
             form_sections=[
-                ("Record Summary", ["record_no", "customer_name", "status"]),
-                ("Repair Details", ["updated_at", "notes", "attachments"]),
-                ("Intake Workflow", ["device_serial", "issue_summary", "document_check"]),
+                ("基本資料", ["record_no", "customer_name", "status"]),
+                ("維修資訊", ["updated_at", "notes", "attachments"]),
+                ("收貨檢查", ["device_serial", "issue_summary", "document_check"]),
             ],
             checklist_items=[
-                "record_no 對應維修收貨單號",
-                "notes 對應故障描述與收件備註",
-                "attachments 對應文件與外觀照片",
-                "status 對應收件、待補件或待確認狀態",
+                "先確認單號、客戶名稱與狀態。",
+                "設備序號、問題摘要與文件檢查先保存為本地草稿。",
+                "附件與拍照串接會在下一階段接入。",
             ],
             selected_camera_name=selected_camera_name,
             draft_service=draft_service,

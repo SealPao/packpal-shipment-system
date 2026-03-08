@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from typing import Iterable, Sequence
 
@@ -6,26 +6,30 @@ from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QLineEdit, QMainWindo
 
 from app.config import APP_TITLE, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH
 from services.draft_service import DraftService
-from ui.common import ScreenContainer, app_stylesheet, build_footer, create_back_row, create_card, create_page_header
+from ui.common import ScreenContainer, app_stylesheet, apply_window_icon, build_footer, create_back_row, create_card, create_page_header
+
+
+FIELD_LABELS = {
+    "record_no": "單號",
+    "customer_name": "客戶名稱",
+    "status": "狀態",
+    "updated_at": "更新時間",
+    "notes": "備註",
+    "attachments": "附件",
+    "scan_code": "掃描碼",
+    "photo_checkpoint": "拍照檢查點",
+    "upload_queue": "上傳佇列",
+    "device_serial": "設備序號",
+    "issue_summary": "問題摘要",
+    "document_check": "文件檢查",
+    "return_reason": "退貨原因",
+    "condition_check": "外觀檢查",
+    "review_tag": "複核標記",
+}
 
 
 class OperationWindowBase(QMainWindow):
-    def __init__(
-        self,
-        *,
-        module_key: str,
-        page_title: str,
-        page_subtitle: str,
-        section_title: str,
-        section_body: str,
-        checklist_items: Iterable[str],
-        form_sections: Sequence[tuple[str, list[str]]],
-        selected_camera_name: str | None = None,
-        draft_service: DraftService | None = None,
-        parent_mode_select: QMainWindow | None = None,
-        primary_color: str = "#2563eb",
-        hover_color: str = "#1d4ed8",
-    ) -> None:
+    def __init__(self, *, module_key: str, page_title: str, page_subtitle: str, section_title: str, section_body: str, checklist_items: Iterable[str], form_sections: Sequence[tuple[str, list[str]]], selected_camera_name: str | None = None, draft_service: DraftService | None = None, parent_mode_select: QMainWindow | None = None, primary_color: str = "#2563eb", hover_color: str = "#1d4ed8") -> None:
         super().__init__(parent_mode_select)
         self.module_key = module_key
         self.parent_mode_select = parent_mode_select
@@ -35,12 +39,12 @@ class OperationWindowBase(QMainWindow):
 
         self.setWindowTitle(f"{APP_TITLE} - {page_title}")
         self.setMinimumSize(WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT)
+        apply_window_icon(self)
 
         container = ScreenContainer()
         self.setCentralWidget(container)
 
-        container.layout.addStretch(1)
-        container.layout.addWidget(create_page_header(page_title, page_subtitle))
+        container.layout.addWidget(create_page_header(page_title, page_subtitle, show_logo=False))
 
         card, card_layout = create_card()
         card_layout.addWidget(self._build_section_title(section_title))
@@ -78,7 +82,8 @@ class OperationWindowBase(QMainWindow):
         return label
 
     def _build_camera_status(self) -> QLabel:
-        label = QLabel(f"目前選擇的相機：{self.selected_camera_name or '未選擇'}")
+        camera_name = self.selected_camera_name or "尚未選擇"
+        label = QLabel(f"目前相機：{camera_name}")
         label.setObjectName("cameraStatus")
         return label
 
@@ -120,13 +125,13 @@ class OperationWindowBase(QMainWindow):
             row_layout.setContentsMargins(0, 0, 0, 0)
             row_layout.setSpacing(12)
 
-            label = QLabel(field_key)
+            label = QLabel(FIELD_LABELS.get(field_key, field_key))
             label.setObjectName("fieldLabel")
             label.setMinimumWidth(180)
 
             field = QLineEdit()
             field.setObjectName("placeholderField")
-            field.setPlaceholderText(f"預留欄位：{field_key}")
+            field.setPlaceholderText(f"請輸入 {FIELD_LABELS.get(field_key, field_key)}")
             self.fields[field_key] = field
 
             row_layout.addWidget(label)
@@ -156,12 +161,8 @@ class OperationWindowBase(QMainWindow):
         return {field_key: widget.text().strip() for field_key, widget in self.fields.items()}
 
     def save_draft(self) -> None:
-        draft_id = self.draft_service.save_draft(
-            module_key=self.module_key,
-            payload=self.collect_form_data(),
-            camera_name=self.selected_camera_name,
-        )
-        self.draft_status_label.setText(f"草稿已儲存 #{draft_id}")
+        draft_id = self.draft_service.save_draft(module_key=self.module_key, payload=self.collect_form_data(), camera_name=self.selected_camera_name)
+        self.draft_status_label.setText(f"草稿已儲存，編號 #{draft_id}")
 
     def load_latest_draft(self, show_empty_message: bool) -> None:
         draft = self.draft_service.latest_draft(self.module_key)
@@ -169,13 +170,13 @@ class OperationWindowBase(QMainWindow):
 
         if draft is None:
             if show_empty_message:
-                self.draft_status_label.setText("目前沒有可用草稿")
+                self.draft_status_label.setText("目前沒有草稿。")
             return
 
         for field_key, widget in self.fields.items():
             widget.setText(payload.get(field_key, ""))
 
-        camera_name = draft.camera_name or self.selected_camera_name or "未選擇"
+        camera_name = draft.camera_name or self.selected_camera_name or "尚未選擇"
         self.draft_status_label.setText(f"已載入草稿 #{draft.id} / 相機：{camera_name}")
 
     def go_back(self) -> None:

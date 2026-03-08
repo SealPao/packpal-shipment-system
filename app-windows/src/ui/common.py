@@ -1,8 +1,10 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QVBoxLayout, QWidget
 
+from app.config import logo_path
 from app.version import APP_VERSION
 
 
@@ -13,12 +15,29 @@ FOOTER_TEXT = (
 )
 
 
+def apply_window_icon(window: QWidget) -> None:
+    path = logo_path()
+    if path.exists():
+        window.setWindowIcon(QIcon(str(path)))
+
+
 def build_footer() -> QLabel:
     footer = QLabel(FOOTER_TEXT)
     footer.setAlignment(Qt.AlignmentFlag.AlignCenter)
     footer.setObjectName("footerLabel")
     footer.setWordWrap(True)
     return footer
+
+
+def build_logo_label(max_height: int = 140) -> QLabel:
+    logo = QLabel()
+    logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    logo.setObjectName("logoLabel")
+    path = logo_path()
+    if path.exists():
+        pixmap = QPixmap(str(path))
+        logo.setPixmap(pixmap.scaledToHeight(max_height, Qt.TransformationMode.SmoothTransformation))
+    return logo
 
 
 def create_mode_button(label: str) -> QPushButton:
@@ -33,15 +52,18 @@ class ScreenContainer(QWidget):
         super().__init__()
         self.setObjectName("screenContainer")
         self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(32, 32, 32, 24)
+        self.layout.setContentsMargins(32, 24, 32, 24)
         self.layout.setSpacing(20)
 
 
-def create_page_header(title_text: str, subtitle_text: str) -> QWidget:
+def create_page_header(title_text: str, subtitle_text: str, *, show_logo: bool = True) -> QWidget:
     header = QWidget()
     layout = QVBoxLayout(header)
     layout.setContentsMargins(0, 0, 0, 0)
-    layout.setSpacing(8)
+    layout.setSpacing(10)
+
+    if show_logo:
+        layout.addWidget(build_logo_label())
 
     title = QLabel(title_text)
     title.setObjectName("pageTitle")
@@ -91,11 +113,12 @@ def app_stylesheet(primary_color: str = "#2563eb", hover_color: str = "#1d4ed8")
         #sectionBody {{ font-size: 14px; color: #4b5563; line-height: 1.6; }}
         #subSectionTitle {{ font-size: 15px; font-weight: 700; color: #111827; }}
         #fieldLabel {{ font-size: 13px; color: #374151; }}
-        #cameraStatus, #draftStatus, #settingsHint {{ font-size: 13px; color: #334155; }}
+        #cameraStatus, #draftStatus, #settingsHint, #employeeStatus {{ font-size: 13px; color: #334155; }}
         #card {{ background-color: white; border: 1px solid #dbe2ea; border-radius: 16px; }}
         #subCard {{ background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }}
         QLabel {{ color: #111827; }}
         QLineEdit, QComboBox {{ min-height: 38px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #ffffff; }}
+        QTableWidget {{ border: 1px solid #cbd5e1; border-radius: 10px; background-color: white; }}
         QPushButton {{ padding: 10px 18px; border: none; border-radius: 10px; background-color: {primary_color}; color: white; font-size: 15px; font-weight: 600; }}
         QPushButton:hover {{ background-color: {hover_color}; }}
         #secondaryButton {{ background-color: #e5e7eb; color: #111827; }}

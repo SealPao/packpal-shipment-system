@@ -1,3 +1,4 @@
+﻿import csv
 import os
 from pathlib import Path
 import tempfile
@@ -5,11 +6,13 @@ import tempfile
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtCore import QSettings
-from PySide6.QtWidgets import QApplication, QComboBox, QLabel, QLineEdit, QPushButton
+from PySide6.QtWidgets import QApplication, QComboBox, QLabel, QLineEdit, QPushButton, QTableWidget
 
 from db.session import connect, initialize_database
 from services.camera_service import CameraOption
 from services.draft_service import DraftService
+from services.employee_service import EmployeeService
+from services.settings_service import SettingsService
 from ui.login_window import LoginWindow
 from ui.mode_select_window import ModeSelectWindow
 from ui.repair_receiving_window import RepairReceivingWindow
@@ -51,33 +54,53 @@ def unique_db_path(name: str) -> Path:
     return Path(tempfile.gettempdir()) / f"{name}-{os.getpid()}.db"
 
 
-def test_login_window_uses_operator_name_only() -> None:
+def write_employee_file() -> None:
+    service = EmployeeService(SettingsService())
+    target = service.employee_file_path()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with target.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["employee_id", "name"])
+        writer.writeheader()
+        writer.writerow({"employee_id": "A001", "name": "王小明"})
+        writer.writerow({"employee_id": "A002", "name": "陳美玲"})
+
+
+def test_login_window_uses_employee_lookup() -> None:
+    write_employee_file()
     window = LoginWindow()
-    labels = [label.text() for label in window.findChildren(QLabel)]
     edits = window.findChildren(QLineEdit)
     buttons = [button.text() for button in window.findChildren(QPushButton)]
 
     assert window.windowTitle() == "出貨小幫手 - 進入作業"
-    assert "輸入操作人員名稱後即可開始，不需要密碼。" in labels
-    assert len(edits) == 1
-    assert edits[0].placeholderText() == "請輸入操作人員名稱"
+    assert edits[0].placeholderText() == "請輸入員工編號"
+    assert edits[1].isReadOnly()
     assert "系統設定" in buttons
     assert "進入作業" in buttons
 
+    window.employee_id_input.setText("A001")
+    assert window.employee_name_input.text() == "王小明"
 
-def test_settings_window_renders_core_fields() -> None:
+
+def test_settings_window_renders_core_fields_and_employee_table() -> None:
+    write_employee_file()
     window = SettingsWindow()
     labels = [label.text() for label in window.findChildren(QLabel)]
+    table = window.findChild(QTableWidget)
 
-    assert "預設操作人員" in labels
     assert "NAS API 位址" in labels
     assert "本地儲存路徑" in labels
+    assert "員工資料設定" in labels
+    assert table is not None
+    assert table.columnCount() == 2
 
 
 def test_mode_selection_window_renders_camera_and_settings() -> None:
-    window = ModeSelectWindow(camera_service=FakeCameraService(), draft_service=DraftService(unique_db_path('mode')))
+    write_employee_file()
+    employee = EmployeeService().find_by_id("A002")
+    window = ModeSelectWindow(current_employee=employee, camera_service=FakeCameraService(), draft_service=DraftService(unique_db_path("mode")))
     buttons = [button.text() for button in window.findChildren(QPushButton)]
     combo = window.findChild(QComboBox)
+    labels = [label.text() for label in window.findChildren(QLabel)]
 
     assert "出貨作業" in buttons
     assert "維修收貨" in buttons
@@ -86,10 +109,11 @@ def test_mode_selection_window_renders_camera_and_settings() -> None:
     assert combo is not None
     assert combo.count() == 2
     assert combo.currentText() == "Document Camera"
+    assert "目前操作人員：A002 / 陳美玲" in labels
 
 
 def test_shipment_window_can_save_and_load_draft() -> None:
-    draft_service = DraftService(unique_db_path('shipment'))
+    draft_service = DraftService(unique_db_path("shipment"))
     window = ShipmentWindow(selected_camera_name="Document Camera", draft_service=draft_service)
     labels = [label.text() for label in window.findChildren(QLabel)]
 
@@ -100,34 +124,34 @@ def test_shipment_window_can_save_and_load_draft() -> None:
     reloaded = ShipmentWindow(selected_camera_name="Document Camera", draft_service=draft_service)
     reloaded.load_latest_draft(show_empty_message=True)
 
-    assert "目前選擇的相機：Document Camera" in labels
+    assert "目前相機：Document Camera" in labels
     assert reloaded.fields["record_no"].text() == "SHP-TEST-001"
     assert reloaded.fields["notes"].text() == "Draft note"
 
 
 def test_repair_window_renders_contract_aligned_fields() -> None:
-    window = RepairReceivingWindow(selected_camera_name="USB Camera", draft_service=DraftService(unique_db_path('repair')))
+    window = RepairReceivingWindow(selected_camera_name="USB Camera", draft_service=DraftService(unique_db_path("repair")))
     labels = [label.text() for label in window.findChildren(QLabel)]
     placeholders = [field.placeholderText() for field in window.findChildren(QLineEdit)]
 
     assert window.windowTitle() == "出貨小幫手 - 維修收貨"
-    assert "Repair Details" in labels
-    assert "目前選擇的相機：USB Camera" in labels
-    assert any(text == "預留欄位：notes" for text in placeholders)
+    assert "維修資訊" in labels
+    assert "目前相機：USB Camera" in labels
+    assert any(text == "請輸入 備註" for text in placeholders)
 
 
 def test_return_window_renders_contract_aligned_fields() -> None:
-    window = ReturnReceivingWindow(selected_camera_name="Document Camera", draft_service=DraftService(unique_db_path('return')))
+    window = ReturnReceivingWindow(selected_camera_name="Document Camera", draft_service=DraftService(unique_db_path("return")))
     labels = [label.text() for label in window.findChildren(QLabel)]
     placeholders = [field.placeholderText() for field in window.findChildren(QLineEdit)]
 
     assert window.windowTitle() == "出貨小幫手 - 退貨收貨"
-    assert "Return Details" in labels
-    assert any(text == "預留欄位：return_reason" for text in placeholders)
+    assert "退貨資訊" in labels
+    assert any(text == "請輸入 退貨原因" for text in placeholders)
 
 
 def test_database_initialization_creates_record_drafts_table() -> None:
-    db_path = unique_db_path('db')
+    db_path = unique_db_path("db")
     initialize_database(db_path)
     with connect(db_path) as connection:
         row = connection.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'record_drafts'").fetchone()
