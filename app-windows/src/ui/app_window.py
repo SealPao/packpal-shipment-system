@@ -62,15 +62,19 @@ class LoginPage(QWidget):
         input_shell.setObjectName("heroInputShell")
         input_layout = QVBoxLayout(input_shell)
         input_layout.setContentsMargins(18, 12, 18, 12)
-        input_layout.setSpacing(0)
+        input_layout.setSpacing(6)
+
+        prompt_label = QLabel("請輸入您的員工號碼")
+        prompt_label.setObjectName("heroInputHint")
+        prompt_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
         self.employee_id_input = QLineEdit()
         self.employee_id_input.setObjectName("heroInput")
         self.employee_id_input.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.employee_id_input.setPlaceholderText("請輸入您的員工號碼")
         self.employee_id_input.textChanged.connect(self.handle_employee_id_changed)
         self.employee_id_input.returnPressed.connect(self.handle_enter)
 
+        input_layout.addWidget(prompt_label)
         input_layout.addWidget(self.employee_id_input)
 
         self.enter_button = QPushButton("請點我開始工作")
@@ -759,4 +763,5 @@ class AppWindow(QMainWindow):
 
     def selected_camera_name(self) -> str:
         return self.mode_page.selected_camera_name()
+
 
