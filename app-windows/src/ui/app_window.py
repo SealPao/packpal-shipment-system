@@ -60,9 +60,10 @@ class LoginPage(QWidget):
 
         input_shell = QFrame()
         input_shell.setObjectName("heroInputShell")
+        input_shell.setFixedHeight(96)
         input_layout = QVBoxLayout(input_shell)
-        input_layout.setContentsMargins(18, 12, 18, 12)
-        input_layout.setSpacing(6)
+        input_layout.setContentsMargins(18, 10, 18, 10)
+        input_layout.setSpacing(2)
 
         prompt_label = QLabel("請輸入您的員工號碼")
         prompt_label.setObjectName("heroInputHint")
@@ -763,5 +764,7 @@ class AppWindow(QMainWindow):
 
     def selected_camera_name(self) -> str:
         return self.mode_page.selected_camera_name()
+
+
 
 
